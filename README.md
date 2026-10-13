@@ -1,33 +1,29 @@
 # sitecheck
 
-A passive security checker for websites. `sitecheck` makes a handful of
-ordinary HTTP/TLS requests to a site — the same requests any browser makes —
-and grades what it finds, from **A** (solid security hygiene) to **F**
-(missing the basics).
-
-It does **not** scan, fuzz, brute-force, or probe for vulnerabilities. It only
-looks at what a normal visitor's browser would already see: response headers,
-the TLS certificate, cookies, and whether `http://` redirects to `https://`.
+A CLI tool that checks a website's security setup: response headers, TLS
+certificate, cookies, and whether `http://` actually redirects to `https://`.
+Everything it does is a normal request a browser already makes when loading a
+page. No scanning, no fuzzing, no probing for vulnerabilities. At the end you
+get a score and a letter grade, A through F.
 
 ## What it checks
 
 | Check | Why it matters |
 | --- | --- |
-| **Strict-Transport-Security (HSTS)** | Tells browsers to always use HTTPS for this site, even if a user types `http://` or clicks an old link. Without it, an attacker on the network can downgrade a visitor to plain HTTP and intercept traffic. |
-| **Content-Security-Policy (CSP)** | Restricts which scripts, styles, and other resources a page may load. A good CSP is one of the strongest defenses against cross-site scripting (XSS). |
-| **X-Frame-Options / CSP `frame-ancestors`** | Controls whether the page can be embedded in an `<iframe>` on another site. Without it, the site is vulnerable to clickjacking. |
-| **X-Content-Type-Options** | `nosniff` stops browsers from guessing ("sniffing") a response's content type, which can turn an innocuous upload into executable script. |
-| **Referrer-Policy** | Controls how much of the current URL is leaked to third parties via the `Referer` header when a user clicks a link — relevant when URLs contain tokens or other sensitive data. |
-| **Permissions-Policy** | Explicitly restricts powerful browser features (camera, microphone, geolocation, etc.), reducing what a compromised or malicious embedded script can do. |
-| **TLS certificate** | Checks the certificate is valid, who issued it, how many days remain before expiry (warns under 14 days), and which TLS version was negotiated. An expired or misconfigured certificate breaks trust and can be exploited for interception. |
-| **HTTP → HTTPS redirect** | Confirms that plain `http://` traffic is upgraded to `https://`, so visitors who don't type the scheme explicitly still end up encrypted. |
-| **Server / X-Powered-By** | Flags headers that unnecessarily reveal server software and version numbers, which makes it easier for an attacker to look up known vulnerabilities. |
-| **Cookies** | Checks every `Set-Cookie` header for the `Secure`, `HttpOnly`, and `SameSite` attributes, which protect cookies from network interception, script access (XSS), and cross-site request forgery. |
+| **Strict-Transport-Security (HSTS)** | Forces the browser to use HTTPS on every future visit. Without it, someone who types `http://` or clicks an old link can be downgraded to plain HTTP by anyone on the network. |
+| **Content-Security-Policy (CSP)** | Probably the single strongest defense against XSS. It locks down which scripts, styles, and resources a page is allowed to load. |
+| **X-Frame-Options / CSP `frame-ancestors`** | Stops the page from being loaded in someone else's `<iframe>`. Skip it and you're open to clickjacking. |
+| **X-Content-Type-Options** | `nosniff` keeps the browser from guessing content types on its own, a trick that's been used to turn file uploads into executable scripts. |
+| **Referrer-Policy** | Controls how much of the current URL leaks to other sites through the `Referer` header when a link gets clicked. Matters a lot if your URLs carry tokens or query params. |
+| **Permissions-Policy** | Locks down camera, mic, geolocation, and similar browser features so an injected or third-party script can't just ask for them. |
+| **TLS certificate** | Valid or not, who issued it, how many days are left before it expires (flags anything under 14 days), and which TLS version got negotiated. |
+| **HTTP → HTTPS redirect** | Confirms plain `http://` traffic actually gets upgraded, not just that the `https://` version happens to work. |
+| **Server / X-Powered-By** | Flags headers that hand an attacker a software version for free, saving them a lookup. |
+| **Cookies** | Checks every `Set-Cookie` header for `Secure`, `HttpOnly`, and `SameSite`. |
 
-Each check contributes to an overall 0–100 score, which maps to a letter
-grade (A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, F below that). The scoring logic lives
-in [`src/sitecheck/scoring.py`](src/sitecheck/scoring.py), separate from the
-network code, so it can be tested with plain data in isolation.
+Scoring logic lives in [`src/sitecheck/scoring.py`](src/sitecheck/scoring.py),
+kept separate from the networking code so it's testable on its own. A score
+of 90+ is an A, 80+ a B, 70+ a C, 60+ a D, anything below that is an F.
 
 ## Installation
 
@@ -37,7 +33,7 @@ Requires Python 3.11+.
 pip install git+https://github.com/aleksandersarkezi/sitecheck.git
 ```
 
-Or, for local development:
+For local development:
 
 ```bash
 git clone https://github.com/aleksandersarkezi/sitecheck.git
@@ -47,31 +43,29 @@ pip install -e ".[dev]"
 
 ## Usage
 
-Check a single site:
-
 ```bash
 sitecheck example.com
 ```
 
-Check several sites at once, from a file (one host per line, `#` for comments):
+Check several sites from a file (one host per line, `#` for comments):
 
 ```bash
 sitecheck -f urls.txt
 ```
 
-Machine-readable output, for scripting:
+Machine-readable output for scripting:
 
 ```bash
 sitecheck example.com --json
 ```
 
-Custom network timeout (seconds, default 10):
+Custom network timeout in seconds (default is 10):
 
 ```bash
 sitecheck example.com --timeout 5
 ```
 
-Use in CI — exit with a non-zero status if any site scores below a grade:
+Use it as a CI gate, exits non-zero if any site scores below the given grade:
 
 ```bash
 sitecheck example.com --fail-under C
@@ -111,17 +105,16 @@ $ sitecheck example.com
 Score: 33/100  Grade: F
 ```
 
-(Colors and Unicode box-drawing characters are used automatically when the
-terminal supports them.)
+Colors and proper box-drawing characters show up automatically once your
+terminal supports them.
 
 ## Responsible use
 
-`sitecheck` only sends the same kind of plain GET requests a web browser
-sends when a visitor loads a page — it does not attempt logins, submit forms,
-enumerate paths, or send anything resembling an attack payload. Even so, only
-run it against sites you own or are otherwise authorized to test; sending
-automated requests to a site you don't control may violate its terms of
-service even when the requests themselves are harmless.
+sitecheck only sends the kind of request a browser already sends when
+loading a page: no login attempts, no form submissions, no path enumeration.
+That said, point it only at sites you own or are otherwise allowed to test.
+Automated requests against someone else's site can violate their terms of
+service even when nothing you send is actually harmful.
 
 ## Development
 
@@ -133,4 +126,4 @@ pytest
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
