@@ -1,5 +1,7 @@
 # sitecheck
 
+[![CI](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/ci.yml)
+
 A CLI tool that checks a website's security setup: response headers, TLS
 certificate, cookies, and whether `http://` actually redirects to `https://`.
 Everything it does is a normal request a browser already makes when loading a
