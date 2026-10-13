@@ -34,13 +34,13 @@ network code, so it can be tested with plain data in isolation.
 Requires Python 3.11+.
 
 ```bash
-pip install git+https://github.com/<your-username>/sitecheck.git
+pip install git+https://github.com/aleksandersarkezi/sitecheck.git
 ```
 
 Or, for local development:
 
 ```bash
-git clone https://github.com/<your-username>/sitecheck.git
+git clone https://github.com/aleksandersarkezi/sitecheck.git
 cd sitecheck
 pip install -e ".[dev]"
 ```
