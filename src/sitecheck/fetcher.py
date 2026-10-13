@@ -18,13 +18,19 @@ class FetchError(Exception):
     """Raised when a site cannot be fetched, with a message safe to show users."""
 
 
-def fetch(url: str, timeout: float = 10.0) -> httpx.Response:
-    """GET `url`, following redirects, raising FetchError on any failure."""
+def fetch(
+    url: str, timeout: float = 10.0, transport: httpx.BaseTransport | None = None
+) -> httpx.Response:
+    """GET `url`, following redirects, raising FetchError on any failure.
+
+    `transport` can be used to inject an `httpx.MockTransport` in tests.
+    """
     try:
         with httpx.Client(
             follow_redirects=True,
             timeout=timeout,
             headers={"User-Agent": USER_AGENT},
+            transport=transport,
         ) as client:
             return client.get(url)
     except httpx.ConnectTimeout as exc:

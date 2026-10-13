@@ -7,12 +7,20 @@ import httpx
 from .fetcher import USER_AGENT
 
 
-def check_https_redirect(host: str, timeout: float = 10.0) -> tuple[bool | None, str]:
-    """Return (redirected, message) describing whether http:// upgrades to https://."""
+def check_https_redirect(
+    host: str, timeout: float = 10.0, transport: httpx.BaseTransport | None = None
+) -> tuple[bool | None, str]:
+    """Return (redirected, message) describing whether http:// upgrades to https://.
+
+    `transport` can be used to inject an `httpx.MockTransport` in tests.
+    """
     http_url = f"http://{host}"
     try:
         with httpx.Client(
-            follow_redirects=True, timeout=timeout, headers={"User-Agent": USER_AGENT}
+            follow_redirects=True,
+            timeout=timeout,
+            headers={"User-Agent": USER_AGENT},
+            transport=transport,
         ) as client:
             response = client.get(http_url)
     except httpx.HTTPError as exc:

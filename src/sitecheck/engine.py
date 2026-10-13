@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import httpx
+
 from .cookies import check_cookies, parse_cookies
 from .fetcher import FetchError, fetch
 from .headers import check_headers
@@ -23,18 +25,23 @@ def normalize_host(raw: str) -> tuple[str, str]:
     return host, f"https://{host}"
 
 
-def analyze(raw_host: str, timeout: float = 10.0) -> SiteReport:
-    """Run every passive check against `raw_host` and return the full report."""
+def analyze(
+    raw_host: str, timeout: float = 10.0, transport: httpx.BaseTransport | None = None
+) -> SiteReport:
+    """Run every passive check against `raw_host` and return the full report.
+
+    `transport` can be used to inject an `httpx.MockTransport` in tests.
+    """
     host, url = normalize_host(raw_host)
     report = SiteReport(host=host, url=url)
 
     report.tls = check_tls(host, timeout=timeout)
     report.redirects_to_https, report.redirect_message = check_https_redirect(
-        host, timeout=timeout
+        host, timeout=timeout, transport=transport
     )
 
     try:
-        response = fetch(url, timeout=timeout)
+        response = fetch(url, timeout=timeout, transport=transport)
     except FetchError as exc:
         report.fetch_error = str(exc)
         report.score, report.grade = score_report(report)
