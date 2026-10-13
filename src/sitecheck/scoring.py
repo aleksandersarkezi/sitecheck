@@ -6,7 +6,7 @@ unit tested purely with constructed SiteReport objects.
 
 from __future__ import annotations
 
-from .models import SiteReport, Severity, TlsInfo
+from .models import Severity, SiteReport, TlsInfo
 
 MAX_SCORE = 100
 
@@ -93,4 +93,6 @@ def _info_leak_penalty(report: SiteReport) -> int:
 
 
 def _cookie_penalty(report: SiteReport) -> int:
-    return sum(COOKIE_ISSUE_PENALTY for item in report.cookie_checks if item.severity == Severity.WARN)
+    return sum(
+        COOKIE_ISSUE_PENALTY for item in report.cookie_checks if item.severity == Severity.WARN
+    )

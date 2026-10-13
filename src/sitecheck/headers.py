@@ -113,6 +113,7 @@ def _check_permissions_policy(headers: httpx.Headers) -> CheckItem:
         return CheckItem(
             "Permissions-Policy",
             Severity.WARN,
-            "header missing: browser features (camera, mic, geolocation, ...) are not explicitly restricted",
+            "header missing: browser features (camera, mic, geolocation, ...) "
+            "are not explicitly restricted",
         )
     return CheckItem("Permissions-Policy", Severity.OK, value)

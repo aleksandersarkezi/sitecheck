@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import socket
 import ssl
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .models import TlsInfo
 
@@ -27,7 +27,8 @@ def check_tls(host: str, port: int = 443, timeout: float = 10.0) -> TlsInfo:
                 cert = tls_sock.getpeercert()
                 tls_version = tls_sock.version()
     except ssl.SSLCertVerificationError as exc:
-        return TlsInfo(valid=False, error=f"certificate verification failed: {exc.verify_message or exc}")
+        reason = exc.verify_message or exc
+        return TlsInfo(valid=False, error=f"certificate verification failed: {reason}")
     except socket.gaierror:
         return TlsInfo(valid=False, error="DNS resolution failed (host not found)")
     except TimeoutError:
@@ -38,7 +39,7 @@ def check_tls(host: str, port: int = 443, timeout: float = 10.0) -> TlsInfo:
     not_after = _parse_not_after(cert)
     days_to_expiry = None
     if not_after is not None:
-        days_to_expiry = (not_after - datetime.now(timezone.utc)).days
+        days_to_expiry = (not_after - datetime.now(UTC)).days
 
     return TlsInfo(
         valid=True,
@@ -54,7 +55,7 @@ def _parse_not_after(cert: dict) -> datetime | None:
     if not raw:
         return None
     try:
-        return datetime.strptime(raw, _CERT_DATE_FORMAT).replace(tzinfo=timezone.utc)
+        return datetime.strptime(raw, _CERT_DATE_FORMAT).replace(tzinfo=UTC)
     except ValueError:
         return None
 

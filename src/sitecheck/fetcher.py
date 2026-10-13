@@ -42,6 +42,7 @@ def _describe_connect_error(exc: httpx.ConnectError) -> str:
     text = str(exc)
     if isinstance(cause, ssl.SSLCertVerificationError):
         return f"TLS certificate verification failed: {cause.verify_message or cause}"
-    if isinstance(cause, socket.gaierror) or "getaddrinfo failed" in text or "Name or service not known" in text:
+    dns_markers = ("getaddrinfo failed", "Name or service not known")
+    if isinstance(cause, socket.gaierror) or any(marker in text for marker in dns_markers):
         return "DNS resolution failed (host not found)"
     return f"could not connect: {exc}"
