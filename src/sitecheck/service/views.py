@@ -11,12 +11,24 @@ style attributes.
 
 from __future__ import annotations
 
+import hashlib
 from html import escape
+from importlib.resources import files
 
 from .. import __version__
 from .store import StoredCheck
 
 GITHUB_URL = "https://github.com/aleksandersarkezi/sitecheck"
+
+
+def _asset_version(name: str) -> str:
+    """Short content hash for cache busting: a new deploy with a changed file gets
+    a new URL, so browsers never mix new HTML with an old stylesheet."""
+    data = (files(__package__) / "static" / name).read_bytes()
+    return hashlib.sha256(data).hexdigest()[:10]
+
+
+CSS_URL = f"/static/style.css?v={_asset_version('style.css')}"
 GAUGE_SEGMENTS = 20
 
 SEVERITY_LABEL = {"ok": "Pass", "warn": "Warning", "fail": "Fail", "info": "Note"}
@@ -79,7 +91,7 @@ def page(body: str, title: str = "sitecheck") -> str:
       content="Check how well a website is protected: HTTPS, security headers and cookies.">
 <title>{esc(title)}</title>
 <link rel="preload" href="/static/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="{CSS_URL}">
 </head>
 <body>
 <div class="wrap">

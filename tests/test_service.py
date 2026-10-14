@@ -216,3 +216,12 @@ def test_rate_limit_message_on_html_page(client):
     response = client.get("/", params={"host": "s9.example"})
     assert response.status_code == 429
     assert "Try again shortly" in response.text
+
+
+def test_stylesheet_url_is_versioned(client):
+    import re
+
+    text = client.get("/").text
+    match = re.search(r'href="(/static/style\.css\?v=[0-9a-f]{10})"', text)
+    assert match
+    assert client.get(match.group(1)).status_code == 200
