@@ -3,6 +3,8 @@
 [![CI](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/ci.yml)
 [![Deploy](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/deploy.yml/badge.svg)](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/deploy.yml)
 
+**Live: [sitecheck.aleksandersarkezi.com](https://sitecheck.aleksandersarkezi.com)**
+
 A CLI tool that checks a website's security setup: response headers, TLS
 certificate, cookies, and whether `http://` actually redirects to `https://`.
 Everything it does is a normal request a browser already makes when loading a
@@ -121,6 +123,8 @@ Besides the CLI, sitecheck runs as a small self-hosted service:
   down or a certificate is about to expire,
 - **Prometheus metrics** for the checks and the monitored sites.
 
+![sitecheck web UI showing a D grade with grouped findings](docs/screenshot.png)
+
 ```mermaid
 flowchart LR
     user([Visitor]) -- HTTPS --> caddy[Caddy<br/>TLS, HSTS, reverse proxy]
@@ -174,7 +178,8 @@ risk by design, so most of the work went into what it refuses to do:
   names, so every value is HTML-escaped before rendering. Tests cover both
   user input and hostile values coming back from a scanned site.
 - **The service passes its own check:** strict CSP with no inline styles or
-  scripts, HSTS, frame protection, no `Server` header. It scores 100/A.
+  scripts (the UI has no JavaScript at all and the font is self-hosted), HSTS,
+  frame protection, no `Server` header. It scores 100/A.
 - **Deploy security:** a dedicated SSH key, a pinned host key instead of
   trust-on-first-use, secrets scoped to a GitHub `production` environment.
 

@@ -194,3 +194,25 @@ def test_static_css_served(client):
     response = client.get("/static/style.css")
     assert response.status_code == 200
     assert "text/css" in response.headers["content-type"]
+
+
+def test_csp_allows_self_hosted_font(client):
+    csp = client.get("/").headers["content-security-policy"]
+    assert "font-src 'self'" in csp
+    assert "script-src" not in csp  # no scripts at all
+    assert client.get("/static/fonts/archivo.woff2").status_code == 200
+
+
+def test_report_groups_checks(client):
+    text = client.get("/", params={"host": "good.example"}).text
+    assert "Connection" in text
+    assert "Content protection" in text
+    assert "1 problem out of" in text
+
+
+def test_rate_limit_message_on_html_page(client):
+    for i in range(3):
+        client.get("/", params={"host": f"s{i}.example"})
+    response = client.get("/", params={"host": "s9.example"})
+    assert response.status_code == 429
+    assert "Try again shortly" in response.text

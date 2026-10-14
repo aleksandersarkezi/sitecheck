@@ -54,8 +54,8 @@ log = logging.getLogger("sitecheck.service")
 
 SECURITY_HEADERS = {
     "Content-Security-Policy": (
-        "default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self'; "
-        "frame-ancestors 'none'; base-uri 'none'"
+        "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; "
+        "form-action 'self'; frame-ancestors 'none'; base-uri 'none'"
     ),
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -266,17 +266,19 @@ def create_app(
 
     @app.get("/", response_class=HTMLResponse)
     def index(request: Request, host: Annotated[str | None, Query(max_length=300)] = None):
-        parts = [views.search_form(host or "")]
+        parts = [views.hero(host or "", compact=bool(host))]
         status = 200
-        if host:
+        if not host:
+            parts.append(views.explainer())
+        else:
             try:
                 result, cached = run_check(host, client_ip(request))
                 parts.append(views.report_view(result, cached))
             except CheckError as exc:
                 status = exc.status
-                parts.append(views.error_box(exc.message))
+                parts.append(views.error_box(exc.message, exc.status))
         parts.append(views.monitored_view(store.latest_all()))
-        title = f"{host} · sitecheck" if host else "sitecheck"
+        title = f"{host} – sitecheck" if host else "sitecheck"
         return HTMLResponse(views.page("\n".join(parts), title), status_code=status)
 
     return app
