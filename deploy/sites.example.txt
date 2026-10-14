@@ -1,0 +1,4 @@
+# Sites the monitor checks every run. One host per line, # for comments.
+# Only add sites you own or have permission to check.
+
+example.com

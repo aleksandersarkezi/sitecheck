@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sitecheck"
-version = "0.1.0"
+version = "0.2.0"
 description = "Passive security and TLS checker for websites, scored A-F"
 readme = "README.md"
 license = "MIT"
@@ -26,13 +26,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+service = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "prometheus-client>=0.20",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
+    "sitecheck[service]",
 ]
 
 [project.scripts]
 sitecheck = "sitecheck.cli:main"
+sitecheck-monitor = "sitecheck.service.monitor:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sitecheck"]

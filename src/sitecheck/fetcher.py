@@ -11,7 +11,9 @@ import ssl
 
 import httpx
 
-USER_AGENT = "sitecheck/0.1 (+https://github.com/; passive security checker)"
+USER_AGENT = (
+    "sitecheck/0.2 (+https://github.com/aleksandersarkezi/sitecheck; passive security checker)"
+)
 
 
 class FetchError(Exception):

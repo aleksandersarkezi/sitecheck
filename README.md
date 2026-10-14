@@ -1,6 +1,7 @@
 # sitecheck
 
 [![CI](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/ci.yml)
+[![Deploy](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/deploy.yml/badge.svg)](https://github.com/aleksandersarkezi/sitecheck/actions/workflows/deploy.yml)
 
 A CLI tool that checks a website's security setup: response headers, TLS
 certificate, cookies, and whether `http://` actually redirects to `https://`.
@@ -110,6 +111,97 @@ Score: 33/100  Grade: F
 Colors and proper box-drawing characters show up automatically once your
 terminal supports them.
 
+## Web service and monitoring
+
+Besides the CLI, sitecheck runs as a small self-hosted service:
+
+- a **web UI and JSON API** where anyone can check a site,
+- a **monitor** that re-checks a watchlist every few hours, stores the
+  history in SQLite and posts to Discord/Slack when a grade drops, a site goes
+  down or a certificate is about to expire,
+- **Prometheus metrics** for the checks and the monitored sites.
+
+```mermaid
+flowchart LR
+    user([Visitor]) -- HTTPS --> caddy[Caddy<br/>TLS, HSTS, reverse proxy]
+    caddy -- HTTP :8000 --> app[app<br/>FastAPI + uvicorn]
+    app <--> db[(SQLite<br/>/data volume)]
+    monitor[monitor<br/>every 6 h] --> db
+    monitor -- alerts --> hook([Discord / Slack webhook])
+    app -. scans .-> sites([Public websites])
+    monitor -. scans .-> sites
+    gh[GitHub Actions] -- image --> ghcr[(GHCR)]
+    gh -- ssh deploy.sh --> caddy
+```
+
+Everything runs from one Docker image with Docker Compose on a single VPS.
+GitHub Actions lints, tests and smoke-tests the image on every push; when
+`main` is green it builds the image, pushes it to GitHub Container Registry
+and deploys it over SSH. If the new version fails its health check, the
+deploy script rolls back to the previous image on its own.
+
+Full server setup, step by step: [docs/DEPLOY.md](docs/DEPLOY.md).
+
+### API
+
+| Endpoint | What it returns |
+| --- | --- |
+| `GET /api/check?host=example.com` | Full report, same shape as `sitecheck --json`, plus `cached` |
+| `GET /api/monitored` | Latest result for every monitored site |
+| `GET /api/monitored/{host}?limit=30` | Check history for one monitored site |
+| `GET /healthz` | `{"status": "ok"}` for Docker and uptime checks |
+| `GET /metrics` | Prometheus metrics (blocked from the internet by Caddy) |
+| `GET /api/docs` | Interactive OpenAPI docs |
+
+### Security decisions
+
+A service that makes HTTP requests to whatever a stranger types in is an SSRF
+risk by design, so most of the work went into what it refuses to do:
+
+- **Input validation** (`src/sitecheck/guard.py`): only bare public hostnames.
+  No IP literals, ports, credentials or non-HTTP schemes, and the hostname must
+  resolve exclusively to public addresses (no `127.0.0.1`, `10.x`,
+  `169.254.169.254`, IPv4-mapped IPv6 and so on).
+- **Every redirect hop is re-checked.** The httpx transport is wrapped so a
+  public site answering `302 Location: http://169.254.169.254/` gets blocked
+  instead of followed. Only ports 80 and 443 are allowed anywhere in the chain.
+- **Defense in depth on the server:** containers can't reach the metadata
+  endpoint (an iptables rule in `DOCKER-USER`), run as a non-root user with a
+  read-only filesystem, no Linux capabilities and memory/CPU limits.
+- **Abuse limits:** fresh checks are rate-limited per visitor IP, results are
+  cached for 10 minutes, and at most 4 scans run at once.
+- **Output escaping:** scanned sites control their own headers and certificate
+  names, so every value is HTML-escaped before rendering. Tests cover both
+  user input and hostile values coming back from a scanned site.
+- **The service passes its own check:** strict CSP with no inline styles or
+  scripts, HSTS, frame protection, no `Server` header. It scores 100/A.
+- **Deploy security:** a dedicated SSH key, a pinned host key instead of
+  trust-on-first-use, secrets scoped to a GitHub `production` environment.
+
+Known limitation: DNS rebinding. The hostname is resolved once for the check
+and again when connecting, so a malicious DNS server with a tiny TTL could
+answer differently the second time. The iptables rule above still blocks the
+most valuable internal target; pinning the resolved IP per request would
+close the gap completely.
+
+### Running the service locally
+
+```bash
+pip install -e ".[dev]"
+uvicorn sitecheck.service.app:create_app_from_env --factory --reload
+# http://127.0.0.1:8000
+
+echo "example.com" > sites.txt
+sitecheck-monitor --watchlist sites.txt --db data/sitecheck.db
+```
+
+Or the whole stack except Caddy, with Docker:
+
+```bash
+docker build -t sitecheck .
+docker run --rm -p 127.0.0.1:8000:8000 -v sitecheck_data:/data sitecheck
+```
+
 ## Responsible use
 
 sitecheck only sends the kind of request a browser already sends when
@@ -117,6 +209,11 @@ loading a page: no login attempts, no form submissions, no path enumeration.
 That said, point it only at sites you own or are otherwise allowed to test.
 Automated requests against someone else's site can violate their terms of
 service even when nothing you send is actually harmful.
+
+The public web instance sends one page load's worth of requests per check
+(the same thing services like securityheaders.com do), caches results so
+repeated checks don't hit the target again, and rate-limits each visitor. The
+monitor only checks sites listed in `sites.txt` by whoever runs the server.
 
 ## Development
 
