@@ -15,3 +15,9 @@ htmlcov/
 .env
 *.log
 .DS_Store
+
+# service runtime data
+data/
+*.db
+deploy/.env
+deploy/sites.txt
