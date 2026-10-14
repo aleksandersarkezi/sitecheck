@@ -115,6 +115,14 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"repeat forever with this interval (min {MIN_INTERVAL_SECONDS}); omit to run once",
     )
     parser.add_argument("--timeout", type=float, default=10.0)
+    parser.add_argument(
+        "--initial-delay",
+        type=int,
+        default=0,
+        metavar="SECONDS",
+        help="wait this long before the first run, e.g. so a freshly restarted app and "
+        "reverse proxy are fully up before the monitor checks the site they serve",
+    )
     return parser
 
 
@@ -139,6 +147,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     # instead of waiting out the interval and getting SIGKILLed.
     signal.signal(signal.SIGTERM, lambda *_: stop.set())
     signal.signal(signal.SIGINT, lambda *_: stop.set())
+
+    if args.initial_delay > 0:
+        log.info("waiting %ds before the first run", args.initial_delay)
+        if stop.wait(args.initial_delay):
+            return 0
 
     while True:
         try:

@@ -55,6 +55,7 @@ services:
       - --watchlist=/config/sites.txt
       - --db=/data/sitecheck.db
       - --every=${MONITOR_INTERVAL_SECONDS:-21600}
+      - --initial-delay=60
     environment:
       SITECHECK_DB: /data/sitecheck.db
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
@@ -62,6 +63,14 @@ services:
     volumes:
       - app_data:/data
       - ./sites.txt:/config/sites.txt:ro
+    # The monitor checks its first site right after it starts. During a deploy
+    # the app restarts at the same time, so without this it would scan a 502
+    # error page from Caddy and report a false grade drop.
+    depends_on:
+      app:
+        condition: service_healthy
+      caddy:
+        condition: service_started
     # The monitor serves no HTTP, so the image's healthcheck doesn't apply.
     healthcheck:
       disable: true

@@ -242,3 +242,29 @@ def test_ttl_cache_expiry_and_bound():
     assert cache.get("c") == 3
     clock.now = 11
     assert cache.get("c") is None
+
+
+def test_main_initial_delay_then_runs_once(tmp_path, monkeypatch):
+    waits = []
+
+    class FakeEvent:
+        def wait(self, seconds):
+            waits.append(seconds)
+            return False
+
+        def set(self):
+            pass
+
+    monkeypatch.setattr("sitecheck.service.monitor.threading.Event", FakeEvent)
+    monkeypatch.setattr(
+        "sitecheck.service.monitor.default_analyzer",
+        lambda timeout: (lambda host: report(host)),
+    )
+    (tmp_path / "s.txt").write_text("a.example\n")
+    code = main(
+        ["--watchlist", str(tmp_path / "s.txt"), "--db", str(tmp_path / "d.db"),
+         "--initial-delay", "60"]
+    )
+    assert code == 0
+    assert waits == [60]
+    assert Store(tmp_path / "d.db").latest("a.example") is not None
