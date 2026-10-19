@@ -72,8 +72,8 @@
     </div>
     <p>A public service that grades how well a website is protected, from A to F:
     HTTPS, certificate, security headers and cookies. It runs on my Hetzner server in
-    Docker behind Caddy. Every push to GitHub is tested, built and deployed on its own,
-    and rolls back if the new version fails its health check. A monitor re-checks sites
+    Docker behind Caddy. Every push to main is tested, built into an image and deployed
+    automatically, and rolls back if the new version fails its health check. A monitor re-checks sites
     every few hours and posts to Discord when something gets worse.</p>
     <p>Because it sends requests to any address a visitor types in, most of the work
     went into what it refuses to do: only public hostnames, every redirect re-checked,
@@ -82,8 +82,8 @@
     <figure class="badge">
       <img src="https://sitecheck.aleksandersarkezi.com/badge/aleksandersarkezi.com.svg"
            width="300" height="56" alt="This page's current grade on sitecheck">
-      <figcaption>sitecheck also watches this page. The badge is drawn live from its
-      latest check.</figcaption>
+      <figcaption>sitecheck also watches this page. The badge shows its latest check,
+      which runs every 6 hours.</figcaption>
     </figure>
     <p class="project-links">
       <a href="https://sitecheck.aleksandersarkezi.com">Try it</a>
@@ -112,7 +112,7 @@
     <p>A school project built around my own delivery work: a MySQL database with
     19 entities, triggers and views for tracking deliveries and earnings, with full
     documentation, plus a C# desktop app in WinForms and WPF on top of it.</p>
-    <p class="stack">MySQL, C#, WinForms, WPF</p>
+    <p class="stack">MySQL, C#, WinForms, WPF. School project, the code isn't public.</p>
   </article>
 </section>
 
@@ -128,7 +128,8 @@
       <img src="https://sitecheck.aleksandersarkezi.com/status.svg" width="354" height="188"
            alt="Live numbers from the server: site grades, certificate validity, time since the last deploy and monitor checks">
     </picture>
-    <figcaption>Live from the server, refreshed every few minutes.
+    <figcaption>Live from the server. Grades and check counts come from the monitor,
+    which runs every 6 hours.
     <a href="https://status.aleksandersarkezi.com">Uptime history</a></figcaption>
   </figure>
 
@@ -172,20 +173,20 @@
   <h2 id="experience">Experience</h2>
   <ol class="timeline">
     <li>
-      <p class="when">Oct 2025 – now</p>
-      <div>
-        <h3>Student, Računalništvo in informatika</h3>
-        <p>Višja strokovna šola, Ekonomska šola Murska Sobota. Programming in C# and
-        C++, databases, computer networks and Linux.</p>
-      </div>
-    </li>
-    <li>
       <p class="when">Jan – Mar 2026</p>
       <div>
         <h3>Practical training, Gimnazija Murska Sobota</h3>
         <p>Looked after the school's computers and network, moved and terminated network
         hardware in the server room, and built a web application with its own database
         and admin access.</p>
+      </div>
+    </li>
+    <li>
+      <p class="when">Oct 2025 – now</p>
+      <div>
+        <h3>Student, Računalništvo in informatika</h3>
+        <p>Višja strokovna šola, Ekonomska šola Murska Sobota. Programming in C# and
+        C++, databases, computer networks and Linux.</p>
       </div>
     </li>
     <li>
@@ -208,7 +209,7 @@
     <dt>Automation</dt>
     <dd>GitHub Actions, Git, automated tests, deploys with rollback</dd>
     <dt>Networks</dt>
-    <dd>IPv4 and IPv6, subnetting, VLANs, Cisco switches</dd>
+    <dd>IPv4 and IPv6, subnetting, VLANs, Cisco switch configuration</dd>
     <dt>Programming</dt>
     <dd>Python, C#, C++, SQL, HTML, CSS, JavaScript</dd>
     <dt>Languages</dt>
@@ -219,8 +220,7 @@
 </main>
 
 <footer class="foot">
-  <p>This page and sitecheck run on the same small server, which I set up and maintain
-  myself.</p>
+  <p>Hand-written HTML and CSS, no framework and no JavaScript.</p>
   <p><!-- deploy -->Not deployed by the pipeline yet.<!-- /deploy --></p>
 </footer>
 

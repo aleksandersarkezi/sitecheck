@@ -219,8 +219,8 @@ def hero(value: str = "", compact: bool = False) -> str:
         ""
         if compact
         else """<h1>How well is this website protected?</h1>
-  <p class="lede">Enter a domain. sitecheck looks at its HTTPS setup, security headers and
-  cookies the way a browser would, and grades it from A to F.</p>"""
+  <p class="lede">Enter a website address. sitecheck looks at its HTTPS setup, security
+  headers and cookies the way a browser would, and grades it from A to F.</p>"""
     )
     return f"""<section class="hero{" compact" if compact else ""}">
   {heading}
