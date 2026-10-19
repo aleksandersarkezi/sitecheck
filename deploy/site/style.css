@@ -36,6 +36,8 @@
   --line: #d2dbd7;
   --accent: #2e4bc6;
   --live: #23774f;
+  --srv-bg: #dfeee6;
+  --srv-line: #23774f;
   --font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -48,6 +50,8 @@
     --line: #2c383b;
     --accent: #8ea2ff;
     --live: #4fbf88;
+    --srv-bg: #1b2e26;
+    --srv-line: #4fbf88;
   }
 }
 
@@ -248,6 +252,167 @@ h3 {
 .project-links {
   margin-bottom: 0;
   font-weight: 600;
+}
+
+/* ---- infrastructure flows --------------------------------------------- */
+
+.live-card {
+  margin: 0 0 2rem;
+}
+
+.live-card img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.live-card figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+
+.section-lede {
+  margin: -0.75rem 0 1.75rem;
+  max-width: 36em;
+  color: var(--muted);
+}
+
+.flows {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.flow-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flow-name {
+  font-size: 0.9375rem;
+  font-weight: 750;
+  font-stretch: 112%;
+}
+
+.flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.flow li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-height: 4.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.flow b {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.flow span {
+  color: var(--muted);
+}
+
+.srv {
+  background: var(--srv-bg);
+  border: 1.5px solid var(--srv-line);
+}
+
+.ext {
+  background: var(--surface);
+  border: 1.5px dashed var(--line);
+}
+
+/* Arrow from each step to the next one. */
+.flow li + li::before {
+  content: "";
+  position: absolute;
+  left: -1.35rem;
+  top: 50%;
+  width: 1rem;
+  height: 0;
+  border-top: 2px solid var(--muted);
+}
+
+.flow li + li::after {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: calc(50% - 4px);
+  border: 5px solid transparent;
+  border-left: 6px solid var(--muted);
+}
+
+/* Watch is two separate paths, so there's no arrow from step 2 into step 3. */
+.flow.pairs li:nth-child(3)::before,
+.flow.pairs li:nth-child(3)::after {
+  display: none;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  background: none;
+}
+
+.key::before {
+  content: "";
+  width: 1.1rem;
+  height: 0.8rem;
+  border-radius: 3px;
+}
+
+.key.srv::before {
+  background: var(--srv-bg);
+  border: 1.5px solid var(--srv-line);
+}
+
+.key.ext::before {
+  background: var(--surface);
+  border: 1.5px dashed var(--line);
+}
+
+@media (max-width: 40rem) {
+  .flow-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .flow {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 1.5rem;
+  }
+
+  /* In two columns the arrow into the third step would point at nothing. */
+  .flow li:nth-child(3)::before,
+  .flow li:nth-child(3)::after {
+    display: none;
+  }
 }
 
 /* ---- experience -------------------------------------------------------- */

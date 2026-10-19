@@ -115,6 +115,17 @@ class Store:
             ).fetchall()
         return [_row_to_check(row) for row in rows]
 
+    def counts_since(self, since: datetime) -> tuple[int, int]:
+        """(checks, failed checks) recorded at or after `since`, across all hosts."""
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS total, "
+                "COALESCE(SUM(CASE WHEN fetch_error IS NOT NULL THEN 1 ELSE 0 END), 0) AS failed "
+                "FROM checks WHERE checked_at >= ?",
+                (since.isoformat(),),
+            ).fetchone()
+        return row["total"], row["failed"]
+
     def prune(self, keep_per_host: int = 200) -> int:
         """Delete old rows so the file doesn't grow forever. Returns rows removed."""
         with self._connect() as conn:

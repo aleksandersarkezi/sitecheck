@@ -316,3 +316,44 @@ def test_badge_age_text():
     svg = badge_svg("a.example", check, now)
     assert "88/100, checked 3 h ago" in svg
     assert ">B</text>" in svg
+
+
+def test_status_card_counts_and_themes(tmp_path, analyzer):
+    from datetime import UTC, datetime, timedelta
+
+    settings = Settings(db_path=str(tmp_path / "s.db"), version="sha-0c9f836")
+    store = Store(settings.db_path)
+    now = datetime.now(UTC)
+    store.save(make_report("a.example", "A", 100), now - timedelta(days=40))  # outside 30 days
+    store.save(make_report("a.example", "A", 100), now - timedelta(hours=2))
+    store.save(make_report("b.example", "B", 85), now - timedelta(hours=1))
+    client = TestClient(create_app(settings, analyzer=analyzer, resolver=resolver))
+
+    light = client.get("/status.svg")
+    assert light.status_code == 200
+    assert light.headers["content-type"].startswith("image/svg+xml")
+    text = light.text
+    assert "1 of 2" in text  # b.example is a B
+    assert "60 days" in text  # make_report's certificate
+    assert "since deploy 0c9f836" in text
+    assert "of 2 checks reached" in text  # the 40-day-old row is excluded
+    assert "#f8faf9" in text
+
+    dark = client.get("/status.svg", params={"theme": "dark"}).text
+    assert "#1a2225" in dark
+    assert client.get("/status.svg", params={"theme": "x"}).status_code == 422
+    assert analyzer.calls == []
+
+
+def test_status_card_with_failed_checks():
+    from datetime import UTC, datetime, timedelta
+
+    from sitecheck.service.views import status_svg
+
+    now = datetime(2026, 10, 20, tzinfo=UTC)
+    svg = status_svg([], checks_30d=200, failed_30d=1, started_at=now - timedelta(days=3),
+                     version="dev", now=now)
+    assert "99.5%" in svg
+    assert "3 days" in svg
+    assert "since the last restart" in svg
+    assert "none" in svg

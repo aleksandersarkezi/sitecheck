@@ -42,6 +42,8 @@ services:
       SITECHECK_MAX_CONCURRENT: ${SITECHECK_MAX_CONCURRENT:-4}
       # Used for the canonical link, sitemap and social preview image.
       SITECHECK_PUBLIC_URL: https://${SITE_DOMAIN}/
+      # Shown on the live status card ("running since deploy <commit>").
+      SITECHECK_VERSION: ${IMAGE_TAG:-dev}
     # No "ports:" on purpose. Only Caddy can reach the app.
     expose: ["8000"]
     deploy:
@@ -97,6 +99,8 @@ services:
       ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
       # Domain for the static home page in ./site (see Caddyfile).
       ROOT_DOMAIN: ${ROOT_DOMAIN:-aleksandersarkezi.com}
+      # status.<ROOT_DOMAIN> redirects here (the free UptimeRobot status page).
+      STATUS_PAGE_URL: ${STATUS_PAGE_URL:-https://aleksandersarkezi.com/}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./site:/srv/site:ro

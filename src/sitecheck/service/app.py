@@ -20,7 +20,7 @@ import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from importlib.resources import files
 from typing import Annotated
 
@@ -82,6 +82,7 @@ class Settings:
     max_concurrent_scans: int = 4
     scan_timeout: float = 8.0
     public_url: str | None = None
+    version: str = "dev"
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -93,6 +94,7 @@ class Settings:
             max_concurrent_scans=int(env.get("SITECHECK_MAX_CONCURRENT", cls.max_concurrent_scans)),
             scan_timeout=float(env.get("SITECHECK_SCAN_TIMEOUT", cls.scan_timeout)),
             public_url=env.get("SITECHECK_PUBLIC_URL") or None,
+            version=env.get("SITECHECK_VERSION") or cls.version,
         )
 
 
@@ -158,6 +160,7 @@ def create_app(
     cache: TTLCache[dict] = TTLCache(settings.cache_seconds)
     scan_slots = threading.BoundedSemaphore(settings.max_concurrent_scans)
     metrics = Metrics()
+    started_at = datetime.now(UTC)
 
     app = FastAPI(title="sitecheck", version=__version__, docs_url="/api/docs", redoc_url=None)
     app.mount("/static", StaticFiles(directory=str(files(__package__) / "static")), name="static")
@@ -313,6 +316,26 @@ def create_app(
         except TargetNotAllowed:
             return Response(status_code=404)
         svg = views.badge_svg(clean, store.latest(clean), datetime.now(UTC))
+        return Response(
+            svg,
+            media_type="image/svg+xml",
+            headers={"Cache-Control": "public, max-age=300"},
+        )
+
+    @app.get("/status.svg")
+    def status_card(theme: Annotated[str, Query(pattern="^(light|dark)$")] = "light") -> Response:
+        """Live infrastructure summary for embedding with <img>. Read-only."""
+        now = datetime.now(UTC)
+        total, failed = store.counts_since(now - timedelta(days=30))
+        svg = views.status_svg(
+            store.latest_all(),
+            checks_30d=total,
+            failed_30d=failed,
+            started_at=started_at,
+            version=settings.version,
+            now=now,
+            dark=theme == "dark",
+        )
         return Response(
             svg,
             media_type="image/svg+xml",

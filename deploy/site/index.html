@@ -116,6 +116,58 @@
   </article>
 </section>
 
+<section aria-labelledby="infra">
+  <h2 id="infra">How it all runs</h2>
+  <p class="section-lede">Everything on this page, sitecheck included, runs on one server
+  I set up and look after myself. Three paths keep it going.</p>
+
+  <figure class="live-card">
+    <picture>
+      <source srcset="https://sitecheck.aleksandersarkezi.com/status.svg?theme=dark"
+              media="(prefers-color-scheme: dark)">
+      <img src="https://sitecheck.aleksandersarkezi.com/status.svg" width="354" height="188"
+           alt="Live numbers from the server: site grades, certificate validity, time since the last deploy and monitor checks">
+    </picture>
+    <figcaption>Live from the server, refreshed every few minutes.
+    <a href="https://status.aleksandersarkezi.com">Uptime history</a></figcaption>
+  </figure>
+
+  <div class="flows">
+    <div class="flow-row">
+      <h3 class="flow-name">Ship</h3>
+      <ol class="flow">
+        <li class="ext"><b>git push</b><span>to main on GitHub</span></li>
+        <li class="ext"><b>GitHub Actions</b><span>lint, tests, Docker smoke test</span></li>
+        <li class="ext"><b>Container image</b><span>ghcr.io, tagged by commit</span></li>
+        <li class="srv"><b>deploy.sh</b><span>health check, rolls back on failure</span></li>
+      </ol>
+    </div>
+
+    <div class="flow-row">
+      <h3 class="flow-name">Serve</h3>
+      <ol class="flow">
+        <li class="ext"><b>Visitor</b><span>any browser</span></li>
+        <li class="srv"><b>Caddy</b><span>HTTPS, security headers</span></li>
+        <li class="srv"><b>sitecheck app</b><span>FastAPI in Docker</span></li>
+        <li class="srv"><b>SQLite</b><span>check history</span></li>
+      </ol>
+    </div>
+
+    <div class="flow-row">
+      <h3 class="flow-name">Watch</h3>
+      <ol class="flow pairs">
+        <li class="srv"><b>Monitor</b><span>re-checks sites every 6 hours</span></li>
+        <li class="ext"><b>Discord</b><span>alert on a grade drop or expiring certificate</span></li>
+        <li class="ext"><b>UptimeRobot</b><span>pings the server every 5 minutes</span></li>
+        <li class="ext"><b>Status page</b><span>public uptime history</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <p class="legend"><span class="key srv">On my server</span>
+  <span class="key ext">External service</span></p>
+</section>
+
 <section aria-labelledby="experience">
   <h2 id="experience">Experience</h2>
   <ol class="timeline">

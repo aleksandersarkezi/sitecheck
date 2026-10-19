@@ -71,14 +71,24 @@ GROUPS: list[tuple[str, str, tuple[str, ...]]] = [
 COOKIE_GROUP = ("Cookies", "Whether cookies are kept away from scripts and plain HTTP.")
 
 EXPLAINER = [
-    ("Connection", "A valid certificate, a modern TLS version, and a redirect from http:// "
-     "to https:// that browsers are told to remember."),
-    ("Content protection", "Headers that stop injected scripts, clickjacking and file-type "
-     "tricks."),
-    ("Privacy and permissions", "How much of each URL leaks to other sites, and whether "
-     "camera, microphone and location are locked down."),
-    ("What the server reveals", "Software names and versions an attacker would otherwise "
-     "have to look up."),
+    (
+        "Connection",
+        "A valid certificate, a modern TLS version, and a redirect from http:// "
+        "to https:// that browsers are told to remember.",
+    ),
+    (
+        "Content protection",
+        "Headers that stop injected scripts, clickjacking and file-type tricks.",
+    ),
+    (
+        "Privacy and permissions",
+        "How much of each URL leaks to other sites, and whether "
+        "camera, microphone and location are locked down.",
+    ),
+    (
+        "What the server reveals",
+        "Software names and versions an attacker would otherwise have to look up.",
+    ),
     ("Cookies", "Secure, HttpOnly and SameSite on every cookie the site sets."),
 ]
 
@@ -212,7 +222,7 @@ def hero(value: str = "", compact: bool = False) -> str:
   <p class="lede">Enter a domain. sitecheck looks at its HTTPS setup, security headers and
   cookies the way a browser would, and grades it from A to F.</p>"""
     )
-    return f"""<section class="hero{' compact' if compact else ''}">
+    return f"""<section class="hero{" compact" if compact else ""}">
   {heading}
   <form class="check-form" method="get" action="/">
     <label for="host">Website address</label>
@@ -468,3 +478,109 @@ def badge_svg(host: str, check: StoredCheck | None, now: datetime) -> str:
 <text x="62" y="42" fill="#586569" font-size="12.5">{esc(line)}</text>
 </g>
 </svg>"""
+
+
+STATUS_THEMES = {
+    False: {
+        "tile": "#f8faf9",
+        "line": "#d2dbd7",
+        "ink": "#1c2629",
+        "muted": "#586569",
+        "good": "#23774f",
+        "bad": "#b3261e",
+    },
+    True: {
+        "tile": "#1a2225",
+        "line": "#2c383b",
+        "ink": "#e4ebe8",
+        "muted": "#97a4a7",
+        "good": "#4fbf88",
+        "bad": "#f0716a",
+    },
+}
+
+
+def _duration(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    if minutes < 60:
+        return f"{max(minutes, 1)} min"
+    hours = minutes // 60
+    if hours < 48:
+        return f"{hours} h"
+    return f"{hours // 24} days"
+
+
+def status_svg(
+    checks: list[StoredCheck],
+    *,
+    checks_30d: int,
+    failed_30d: int,
+    started_at: datetime,
+    version: str,
+    now: datetime,
+    dark: bool = False,
+) -> str:
+    """2x2 card of live numbers from this server, for the owner's home page.
+
+    Every number comes from the monitor's stored results or this process, so
+    nothing on it is typed in by hand.
+    """
+    t = STATUS_THEMES[dark]
+    reachable = [c for c in checks if not c.fetch_error]
+    graded_a = sum(1 for c in reachable if c.grade == "A")
+    cert_days = [c.days_to_expiry for c in reachable if c.days_to_expiry is not None]
+    short_version = version.removeprefix("sha-")
+
+    tiles = []
+    if checks:
+        tiles.append(
+            (
+                f"{graded_a} of {len(checks)}",
+                ["sites graded A", "by sitecheck"],
+                graded_a == len(checks),
+            )
+        )
+    else:
+        tiles.append(("none", ["sites monitored", "yet"], True))
+
+    if cert_days:
+        low = min(cert_days)
+        tiles.append((f"{low} days", ["left on the shortest", "TLS certificate"], low >= 14))
+    else:
+        tiles.append(("n/a", ["no certificate", "data yet"], True))
+
+    since = "since the last restart" if version == "dev" else f"since deploy {short_version}"
+    tiles.append((_duration((now - started_at).total_seconds()), ["running", since], True))
+
+    if checks_30d:
+        passed = checks_30d - failed_30d
+        pct = 100 * passed / checks_30d
+        value = "100%" if passed == checks_30d else f"{pct:.1f}%"
+        tiles.append(
+            (value, [f"of {checks_30d} checks reached", "the site, last 30 days"], failed_30d == 0)
+        )
+    else:
+        tiles.append(("0", ["checks in the", "last 30 days"], True))
+
+    parts = []
+    for i, (value, label, ok) in enumerate(tiles):
+        x = (i % 2) * 182
+        y = (i // 2) * 98
+        color = t["good"] if ok else t["bad"]
+        parts.append(
+            f'<rect x="{x + 0.75}" y="{y + 0.75}" width="170.5" height="88.5" rx="8" '
+            f'fill="{t["tile"]}" stroke="{t["line"]}" stroke-width="1.5"/>'
+            f'<text x="{x + 14}" y="{y + 34}" fill="{color}" font-size="22" '
+            f'font-weight="800">{esc(value)}</text>'
+            f'<text x="{x + 14}" y="{y + 56}" fill="{t["muted"]}" font-size="12">'
+            f"{esc(label[0])}</text>"
+            f'<text x="{x + 14}" y="{y + 72}" fill="{t["muted"]}" font-size="12">'
+            f"{esc(label[1])}</text>"
+        )
+    summary = "; ".join(f"{v} {' '.join(lbl)}" for v, lbl, _ in tiles)
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="354" height="188" '
+        f'viewBox="0 0 354 188" role="img" aria-label="{esc(summary)}">'
+        f"<title>{esc(summary)}</title>"
+        f'<g font-family="{BADGE_FONT}">{"".join(parts)}</g></svg>'
+    )

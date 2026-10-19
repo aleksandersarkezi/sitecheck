@@ -69,3 +69,9 @@
 www.{$ROOT_DOMAIN:aleksandersarkezi.com} {
 	redir https://{$ROOT_DOMAIN:aleksandersarkezi.com}{uri} permanent
 }
+
+# status.<domain> is only a short, memorable link to the public uptime page,
+# which is hosted by the uptime monitoring service itself.
+status.{$ROOT_DOMAIN:aleksandersarkezi.com} {
+	redir {$STATUS_PAGE_URL:https://aleksandersarkezi.com/} 302
+}
