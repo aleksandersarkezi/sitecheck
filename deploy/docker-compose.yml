@@ -40,6 +40,8 @@ services:
       SITECHECK_RATE_LIMIT: ${SITECHECK_RATE_LIMIT:-6}
       SITECHECK_CACHE_SECONDS: ${SITECHECK_CACHE_SECONDS:-600}
       SITECHECK_MAX_CONCURRENT: ${SITECHECK_MAX_CONCURRENT:-4}
+      # Used for the canonical link, sitemap and social preview image.
+      SITECHECK_PUBLIC_URL: https://${SITE_DOMAIN}/
     # No "ports:" on purpose. Only Caddy can reach the app.
     expose: ["8000"]
     deploy:

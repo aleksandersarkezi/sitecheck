@@ -12,6 +12,7 @@ style attributes.
 from __future__ import annotations
 
 import hashlib
+import json
 from html import escape
 from importlib.resources import files
 
@@ -19,6 +20,14 @@ from .. import __version__
 from .store import StoredCheck
 
 GITHUB_URL = "https://github.com/aleksandersarkezi/sitecheck"
+AUTHOR_NAME = "Aleksander Šarkezi"
+AUTHOR_LINKEDIN = "https://www.linkedin.com/in/aleksandersarkezi"
+AUTHOR_GITHUB = "https://github.com/aleksandersarkezi"
+
+SITE_DESCRIPTION = (
+    "Free website security check. Enter a domain and sitecheck grades its HTTPS setup, "
+    "security headers and cookies from A to F."
+)
 
 
 def _asset_version(name: str) -> str:
@@ -81,15 +90,71 @@ def grade_class(grade: str | None) -> str:
     return f"g-{g}" if g in {"a", "b", "c", "d", "f"} else "g-none"
 
 
-def page(body: str, title: str = "sitecheck") -> str:
+def _structured_data(base_url: str) -> str:
+    """schema.org JSON-LD so search engines know what the page is and who made it.
+
+    It's a data block, not a script, so it runs under a CSP with no script-src.
+    `</` is escaped so the JSON can never close the surrounding tag.
+    """
+    data = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "sitecheck",
+        "url": base_url,
+        "description": SITE_DESCRIPTION,
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+        "author": {
+            "@type": "Person",
+            "name": AUTHOR_NAME,
+            "url": AUTHOR_LINKEDIN,
+            "sameAs": [AUTHOR_LINKEDIN, AUTHOR_GITHUB],
+        },
+        "codeRepository": GITHUB_URL,
+    }
+    text = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    return f'<script type="application/ld+json">{text}</script>'
+
+
+def page(
+    body: str,
+    title: str = "sitecheck",
+    base_url: str = "/",
+    indexable: bool = True,
+) -> str:
+    """Wrap `body` in the full HTML document.
+
+    Only the plain home page is indexable. Result pages (`/?host=...`) are
+    `noindex`: there are infinitely many of them, they'd be thin duplicate
+    content, and nobody should be able to make a search engine list a
+    stranger's site with an F next to it under this domain.
+    """
+    base = base_url if base_url.endswith("/") else base_url + "/"
+    if indexable:
+        seo = f"""<link rel="canonical" href="{esc(base)}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="sitecheck">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(SITE_DESCRIPTION)}">
+<meta property="og:url" content="{esc(base)}">
+<meta property="og:image" content="{esc(base)}static/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="{esc(AUTHOR_NAME)}">
+{_structured_data(base)}"""
+    else:
+        seo = '<meta name="robots" content="noindex, follow">'
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description"
-      content="Check how well a website is protected: HTTPS, security headers and cookies.">
+<meta name="description" content="{esc(SITE_DESCRIPTION)}">
 <title>{esc(title)}</title>
+{seo}
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/static/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{CSS_URL}">
 </head>
@@ -103,6 +168,9 @@ def page(body: str, title: str = "sitecheck") -> str:
 {body}
 </main>
 <footer class="foot">
+  <p>Built and run by {esc(AUTHOR_NAME)}
+  (<a href="{AUTHOR_LINKEDIN}" rel="author">LinkedIn</a>,
+  <a href="{AUTHOR_GITHUB}">GitHub</a>).</p>
   <p>sitecheck {esc(__version__)}. It only sends the requests a browser sends when it loads
   a page, so it never logs in, submits forms or probes for hidden paths. Check sites you
   own or have permission to test.</p>
@@ -110,6 +178,27 @@ def page(body: str, title: str = "sitecheck") -> str:
 </div>
 </body>
 </html>"""
+
+
+def robots_txt(base_url: str) -> str:
+    base = base_url if base_url.endswith("/") else base_url + "/"
+    return (
+        "User-agent: *\n"
+        "Disallow: /api/\n"
+        "Disallow: /metrics\n"
+        "Allow: /\n"
+        f"\nSitemap: {base}sitemap.xml\n"
+    )
+
+
+def sitemap_xml(base_url: str) -> str:
+    base = base_url if base_url.endswith("/") else base_url + "/"
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"  <url><loc>{esc(base)}</loc></url>\n"
+        "</urlset>\n"
+    )
 
 
 def hero(value: str = "", compact: bool = False) -> str:

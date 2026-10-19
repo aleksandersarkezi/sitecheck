@@ -589,3 +589,11 @@ td.when {
   margin: 0;
   max-width: 40em;
 }
+
+.foot p + p {
+  margin-top: 0.5rem;
+}
+
+.foot a {
+  color: inherit;
+}

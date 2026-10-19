@@ -225,3 +225,50 @@ def test_stylesheet_url_is_versioned(client):
     match = re.search(r'href="(/static/style\.css\?v=[0-9a-f]{10})"', text)
     assert match
     assert client.get(match.group(1)).status_code == 200
+
+
+def test_home_page_is_indexable_with_seo_tags(client):
+    text = client.get("/").text
+    assert 'rel="canonical"' in text
+    assert 'property="og:image"' in text
+    assert "application/ld+json" in text
+    assert "Aleksander Šarkezi" in text
+    assert "noindex" not in text
+
+
+def test_result_pages_are_not_indexed(client):
+    text = client.get("/", params={"host": "good.example"}).text
+    assert 'content="noindex, follow"' in text
+    assert 'rel="canonical"' not in text
+
+
+def test_public_url_setting_wins(tmp_path, analyzer):
+    settings = Settings(db_path=str(tmp_path / "t.db"), public_url="https://sc.example.com/")
+    client = TestClient(create_app(settings, analyzer=analyzer, resolver=resolver))
+    assert '<link rel="canonical" href="https://sc.example.com/">' in client.get("/").text
+    assert "Sitemap: https://sc.example.com/sitemap.xml" in client.get("/robots.txt").text
+
+
+def test_robots_and_sitemap(client):
+    robots = client.get("/robots.txt")
+    assert robots.status_code == 200
+    assert "Disallow: /api/" in robots.text
+    assert "Sitemap: http://testserver/sitemap.xml" in robots.text
+    sitemap = client.get("/sitemap.xml")
+    assert sitemap.headers["content-type"].startswith("application/xml")
+    assert "<loc>http://testserver/</loc>" in sitemap.text
+
+
+def test_structured_data_is_valid_json(client):
+    import json
+    import re
+
+    text = client.get("/").text
+    raw = re.search(r'<script type="application/ld\+json">(.*?)</script>', text).group(1)
+    data = json.loads(raw)
+    assert data["author"]["name"] == "Aleksander Šarkezi"
+
+
+def test_static_social_assets(client):
+    assert client.get("/static/og.png").headers["content-type"] == "image/png"
+    assert client.get("/static/favicon.svg").status_code == 200

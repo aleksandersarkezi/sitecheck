@@ -24,7 +24,7 @@ from importlib.resources import files
 from typing import Annotated
 
 from fastapi import FastAPI, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
@@ -74,6 +74,7 @@ class Settings:
     cache_seconds: float = 600
     max_concurrent_scans: int = 4
     scan_timeout: float = 8.0
+    public_url: str | None = None
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -84,6 +85,7 @@ class Settings:
             cache_seconds=float(env.get("SITECHECK_CACHE_SECONDS", cls.cache_seconds)),
             max_concurrent_scans=int(env.get("SITECHECK_MAX_CONCURRENT", cls.max_concurrent_scans)),
             scan_timeout=float(env.get("SITECHECK_SCAN_TIMEOUT", cls.scan_timeout)),
+            public_url=env.get("SITECHECK_PUBLIC_URL") or None,
         )
 
 
@@ -202,6 +204,14 @@ def create_app(
         log.info("checked %s grade=%s ip=%s", host, report.grade, client_ip)
         return result, False
 
+    def public_base(request: Request) -> str:
+        """The site's own URL for canonical links and the sitemap.
+
+        SITECHECK_PUBLIC_URL wins when set; otherwise the request decides
+        (uvicorn's --proxy-headers makes this https:// behind Caddy).
+        """
+        return settings.public_url or str(request.base_url)
+
     def client_ip(request: Request) -> str:
         # uvicorn runs with --proxy-headers behind Caddy, so this is the
         # visitor's address, not the proxy's.
@@ -278,8 +288,23 @@ def create_app(
                 status = exc.status
                 parts.append(views.error_box(exc.message, exc.status))
         parts.append(views.monitored_view(store.latest_all()))
-        title = f"{host} – sitecheck" if host else "sitecheck"
-        return HTMLResponse(views.page("\n".join(parts), title), status_code=status)
+        title = (
+            f"{host} – sitecheck"
+            if host
+            else "sitecheck – free website security checker by Aleksander Šarkezi"
+        )
+        html = views.page(
+            "\n".join(parts), title, base_url=public_base(request), indexable=not host
+        )
+        return HTMLResponse(html, status_code=status)
+
+    @app.get("/robots.txt", response_class=PlainTextResponse)
+    def robots(request: Request) -> str:
+        return views.robots_txt(public_base(request))
+
+    @app.get("/sitemap.xml")
+    def sitemap(request: Request) -> Response:
+        return Response(views.sitemap_xml(public_base(request)), media_type="application/xml")
 
     return app
 
