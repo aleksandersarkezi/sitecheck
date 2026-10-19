@@ -20,6 +20,7 @@ import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from importlib.resources import files
 from typing import Annotated
 
@@ -303,6 +304,20 @@ def create_app(
             "\n".join(parts), title, base_url=public_base(request), indexable=not host
         )
         return HTMLResponse(html, status_code=status)
+
+    @app.get("/badge/{host}.svg")
+    def badge(host: str) -> Response:
+        """Grade badge for a monitored site, for embedding with <img>."""
+        try:
+            clean = clean_host(host)
+        except TargetNotAllowed:
+            return Response(status_code=404)
+        svg = views.badge_svg(clean, store.latest(clean), datetime.now(UTC))
+        return Response(
+            svg,
+            media_type="image/svg+xml",
+            headers={"Cache-Control": "public, max-age=300"},
+        )
 
     @app.get("/favicon.ico", include_in_schema=False)
     def favicon() -> FileResponse:

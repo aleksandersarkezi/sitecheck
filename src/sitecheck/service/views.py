@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime
 from html import escape
 from importlib.resources import files
 
@@ -412,3 +413,58 @@ def monitored_view(checks: list[StoredCheck]) -> str:
   </table>
   </div>
 </section>"""
+
+
+BADGE_FONT = "system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif"
+BADGE_COLORS = {
+    "A": "#23774f",
+    "B": "#4f7a1c",
+    "C": "#8a5f00",
+    "D": "#b34a12",
+    "F": "#b3261e",
+}
+
+
+def _ago(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    if minutes < 2:
+        return "just now"
+    if minutes < 60:
+        return f"{minutes} min ago"
+    hours = minutes // 60
+    if hours < 48:
+        return f"{hours} h ago"
+    return f"{hours // 24} days ago"
+
+
+def badge_svg(host: str, check: StoredCheck | None, now: datetime) -> str:
+    """A small SVG card with a monitored site's latest grade.
+
+    Only reads stored monitor results, it never triggers a scan, so embedding
+    it anywhere can't be used to make this server request other sites.
+    It's shown through <img>, where SVG can't run scripts or load fonts, so
+    it uses system fonts and has no external references.
+    """
+    if check is None:
+        grade, color, line = "?", "#6b7679", "not monitored by sitecheck"
+    elif check.fetch_error:
+        age = _ago((now - check.checked_at).total_seconds())
+        grade, color, line = "F", BADGE_COLORS["F"], f"unreachable, {age}"
+    else:
+        grade = check.grade or "?"
+        color = BADGE_COLORS.get(grade, "#6b7679")
+        age = _ago((now - check.checked_at).total_seconds())
+        line = f"{check.score}/100, checked {age}"
+    title = f"{host}: grade {grade} on sitecheck"
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="300" height="56" viewBox="0 0 300 56"
+     role="img" aria-label="{esc(title)}">
+<title>{esc(title)}</title>
+<rect x="0.5" y="0.5" width="299" height="55" rx="9" fill="#f8faf9" stroke="#d2dbd7"/>
+<rect x="6" y="6" width="44" height="44" rx="6" fill="{color}"/>
+<g font-family="{BADGE_FONT}">
+<text x="28" y="38" text-anchor="middle" fill="#fff" font-size="26"
+      font-weight="800">{esc(grade)}</text>
+<text x="62" y="24" fill="#1c2629" font-size="14" font-weight="700">{esc(host)}</text>
+<text x="62" y="42" fill="#586569" font-size="12.5">{esc(line)}</text>
+</g>
+</svg>"""

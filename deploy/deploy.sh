@@ -60,6 +60,19 @@ reload_caddy_if_changed() {
   fi
 }
 
+# Writes "Deployed from commit X on DATE" into the home page footer, between
+# the <!-- deploy --> markers. Visitors can see the page really is built from
+# a specific commit and click through to it.
+REPO_URL="${REPO_URL:-https://github.com/aleksandersarkezi/sitecheck}"
+stamp_site() {
+  local tag="$1" sha when
+  [[ -f site/index.html ]] || return 0
+  [[ "$tag" =~ ^sha-([0-9a-f]{7,40})$ ]] || return 0
+  sha="${BASH_REMATCH[1]}"
+  when="$(date -u '+%-d %b %Y, %H:%M UTC')"
+  sed -i -E "s#<!-- deploy -->.*<!-- /deploy -->#<!-- deploy -->Deployed from commit <a href=\"${REPO_URL}/commit/${sha}\">${sha}</a> on ${when}.<!-- /deploy -->#" site/index.html
+}
+
 mkdir -p site
 
 echo "deploying $NEW_TAG (current: $OLD_TAG)"
@@ -69,6 +82,7 @@ docker compose up -d --remove-orphans
 
 if wait_healthy; then
   echo "app is healthy on $NEW_TAG"
+  stamp_site "$NEW_TAG"
   reload_caddy_if_changed
   # Keep the disk from filling up with old images.
   docker image prune -f --filter "until=168h" > /dev/null
@@ -80,6 +94,7 @@ docker compose logs --tail=50 app >&2 || true
 set_tag "$OLD_TAG"
 docker compose up -d --remove-orphans
 if wait_healthy; then
+  stamp_site "$OLD_TAG"
   echo "rollback to $OLD_TAG OK" >&2
 else
   echo "rollback to $OLD_TAG is unhealthy too, check the server" >&2

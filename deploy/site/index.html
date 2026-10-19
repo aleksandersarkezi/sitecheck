@@ -10,6 +10,7 @@
 <meta property="og:title" content="Aleksander Šarkezi">
 <meta property="og:description" content="IT student in Murska Sobota, Slovenia, working toward DevOps and infrastructure.">
 <meta property="og:url" content="https://aleksandersarkezi.com/">
+<meta property="og:image:alt" content="Aleksander Šarkezi">
 <meta property="og:image" content="https://aleksandersarkezi.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -20,6 +21,7 @@
   "@type": "Person",
   "name": "Aleksander Šarkezi",
   "url": "https://aleksandersarkezi.com/",
+  "image": "https://aleksandersarkezi.com/me.jpg",
   "jobTitle": "IT student",
   "address": {
     "@type": "PostalAddress",
@@ -45,6 +47,7 @@
 <div class="wrap">
 
 <header class="intro">
+  <img class="me" src="/me.jpg" width="240" height="240" alt="Aleksander Šarkezi">
   <h1>Aleksander<br>Šarkezi</h1>
   <p class="lede">IT student in Murska Sobota, Slovenia. I like the part of software that
   happens after the code is written: getting it onto a server, keeping it secure and
@@ -76,6 +79,12 @@
     went into what it refuses to do: only public hostnames, every redirect re-checked,
     rate limits, and containers that run without root.</p>
     <p class="stack">Python, FastAPI, Docker Compose, Caddy, GitHub Actions, SQLite</p>
+    <figure class="badge">
+      <img src="https://sitecheck.aleksandersarkezi.com/badge/aleksandersarkezi.com.svg"
+           width="300" height="56" alt="This page's current grade on sitecheck">
+      <figcaption>sitecheck also watches this page. The badge is drawn live from its
+      latest check.</figcaption>
+    </figure>
     <p class="project-links">
       <a href="https://sitecheck.aleksandersarkezi.com">Try it</a>
       <a href="https://github.com/aleksandersarkezi/sitecheck">Source code</a>
@@ -160,6 +169,7 @@
 <footer class="foot">
   <p>This page and sitecheck run on the same small server, which I set up and maintain
   myself.</p>
+  <p><!-- deploy -->Not deployed by the pipeline yet.<!-- /deploy --></p>
 </footer>
 
 </div>

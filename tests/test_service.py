@@ -279,3 +279,40 @@ def test_favicon_ico_served_at_root(client):
     assert response.status_code == 200
     assert response.headers["content-type"] == "image/x-icon"
     assert client.get("/static/apple-touch-icon.png").status_code == 200
+
+
+def test_badge_for_monitored_site(settings, analyzer):
+    Store(settings.db_path).save(make_report("watched.example", "A", 95))
+    client = TestClient(create_app(settings, analyzer=analyzer, resolver=resolver))
+    response = client.get("/badge/watched.example.svg")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("image/svg+xml")
+    assert "max-age=300" in response.headers["cache-control"]
+    assert ">A</text>" in response.text
+    assert "95/100, checked just now" in response.text
+    assert analyzer.calls == []  # never scans
+
+
+def test_badge_for_unmonitored_site_does_not_scan(client, analyzer):
+    response = client.get("/badge/other.example.svg")
+    assert response.status_code == 200
+    assert "not monitored" in response.text
+    assert analyzer.calls == []
+
+
+def test_badge_rejects_bad_hosts(client):
+    assert client.get("/badge/localhost.svg").status_code == 404
+    assert client.get("/badge/%3Cscript%3E.svg").status_code == 404
+
+
+def test_badge_age_text():
+    from datetime import UTC, datetime, timedelta
+
+    from sitecheck.service.store import StoredCheck
+    from sitecheck.service.views import badge_svg
+
+    now = datetime(2026, 10, 20, 12, tzinfo=UTC)
+    check = StoredCheck("a.example", now - timedelta(hours=3), 88, "B", 50, None, {})
+    svg = badge_svg("a.example", check, now)
+    assert "88/100, checked 3 h ago" in svg
+    assert ">B</text>" in svg
