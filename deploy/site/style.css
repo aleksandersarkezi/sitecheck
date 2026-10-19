@@ -1,0 +1,296 @@
+/* aleksandersarkezi.com
+ *
+ * Same typeface and palette as sitecheck, so the two read as one person's work.
+ * The name is the one loud element; everything under it stays plain.
+ */
+
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url("fonts/archivo.woff2") format("woff2-variations"), url("fonts/archivo.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+/* Slovenian and Croatian letters (č, ć, đ, š, ž) are not in the basic Latin
+   file above, so they come from this tiny subset instead of a fallback font. */
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url("fonts/archivo-sl.woff2") format("woff2-variations"), url("fonts/archivo-sl.woff2") format("woff2");
+  unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E;
+}
+
+:root {
+  --paper: #eef2ef;
+  --surface: #f8faf9;
+  --ink: #1c2629;
+  --muted: #586569;
+  --line: #d2dbd7;
+  --accent: #2e4bc6;
+  --live: #23774f;
+  --font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12181a;
+    --surface: #1a2225;
+    --ink: #e4ebe8;
+    --muted: #97a4a7;
+    --line: #2c383b;
+    --accent: #8ea2ff;
+    --live: #4fbf88;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.18em;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.wrap {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+/* ---- intro ------------------------------------------------------------ */
+
+.intro {
+  padding: clamp(3rem, 12vw, 7rem) 0 3rem;
+  border-bottom: 1px solid var(--line);
+}
+
+h1 {
+  margin: 0 0 1.75rem;
+  font-size: clamp(2.5rem, 12.5vw, 6rem);
+  line-height: 1;
+  font-weight: 850;
+  font-stretch: 125%;
+  letter-spacing: -0.035em;
+}
+
+.lede {
+  margin: 0 0 1rem;
+  max-width: 34em;
+  font-size: 1.1875rem;
+}
+
+.status {
+  margin: 0 0 1.75rem;
+  color: var(--muted);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+
+.links .primary {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+/* ---- sections --------------------------------------------------------- */
+
+main section {
+  padding-top: 3rem;
+}
+
+h2 {
+  margin: 0 0 1.5rem;
+  font-size: 1.625rem;
+  line-height: 1.2;
+  font-weight: 750;
+  font-stretch: 110%;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+/* ---- projects --------------------------------------------------------- */
+
+.project {
+  padding: 0 0 1.75rem;
+}
+
+.project + .project {
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.project-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.project-head h3 {
+  font-size: 1.375rem;
+  font-stretch: 112%;
+}
+
+.live {
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: var(--live);
+}
+
+.live::before {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.4em;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 0.08em;
+}
+
+.project p {
+  margin: 0 0 0.75rem;
+  max-width: 38em;
+}
+
+.project .stack {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.project-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.project .project-links {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+/* ---- experience -------------------------------------------------------- */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.25rem 1.5rem;
+  padding: 0 0 1.5rem;
+}
+
+.when {
+  margin: 0;
+  padding-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline p:not(.when) {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+@media (max-width: 34rem) {
+  .timeline li {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- skills ------------------------------------------------------------ */
+
+.skills {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.75rem 1.5rem;
+}
+
+.skills dt {
+  font-weight: 650;
+}
+
+.skills dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+@media (max-width: 34rem) {
+  .skills {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+
+  .skills dd {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* ---- footer ------------------------------------------------------------ */
+
+.foot {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.foot p {
+  margin: 0;
+}
+
+/* ---- 404 --------------------------------------------------------------- */
+
+.notfound {
+  padding: 6rem 0 2rem;
+}
+
+.notfound h1 {
+  font-size: clamp(2.5rem, 10vw, 4rem);
+}

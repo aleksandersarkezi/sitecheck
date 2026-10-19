@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aleksander Šarkezi – IT student, DevOps and infrastructure</title>
+<meta name="description" content="Aleksander Šarkezi, IT student in Murska Sobota, Slovenia. I build small services and run them on my own Linux server with Docker, CI/CD and monitoring.">
+<link rel="canonical" href="https://aleksandersarkezi.com/">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Aleksander Šarkezi">
+<meta property="og:description" content="IT student in Murska Sobota, Slovenia, working toward DevOps and infrastructure.">
+<meta property="og:url" content="https://aleksandersarkezi.com/">
+<meta property="og:image" content="https://aleksandersarkezi.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Aleksander Šarkezi",
+  "url": "https://aleksandersarkezi.com/",
+  "jobTitle": "IT student",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Murska Sobota",
+    "addressCountry": "SI"
+  },
+  "alumniOf": {
+    "@type": "CollegeOrUniversity",
+    "name": "Ekonomska šola Murska Sobota, Višja strokovna šola"
+  },
+  "knowsAbout": ["Linux", "Docker", "CI/CD", "Python", "Computer networks", "Web security"],
+  "sameAs": [
+    "https://www.linkedin.com/in/aleksandersarkezi",
+    "https://github.com/aleksandersarkezi"
+  ]
+}
+</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header class="intro">
+  <h1>Aleksander<br>Šarkezi</h1>
+  <p class="lede">IT student in Murska Sobota, Slovenia. I like the part of software that
+  happens after the code is written: getting it onto a server, keeping it secure and
+  knowing when it breaks.</p>
+  <p class="status">Open to student work and junior roles in DevOps and infrastructure.</p>
+  <nav class="links" aria-label="Contact">
+    <a class="primary" href="mailto:aleksandersarkezi@gmail.com">aleksandersarkezi@gmail.com</a>
+    <a href="https://www.linkedin.com/in/aleksandersarkezi">LinkedIn</a>
+    <a href="https://github.com/aleksandersarkezi">GitHub</a>
+  </nav>
+</header>
+
+<main>
+
+<section aria-labelledby="projects">
+  <h2 id="projects">Projects</h2>
+
+  <article class="project">
+    <div class="project-head">
+      <h3>sitecheck</h3>
+      <span class="live">Running</span>
+    </div>
+    <p>A public service that grades how well a website is protected, from A to F:
+    HTTPS, certificate, security headers and cookies. It runs on my Hetzner server in
+    Docker behind Caddy. Every push to GitHub is tested, built and deployed on its own,
+    and rolls back if the new version fails its health check. A monitor re-checks sites
+    every few hours and posts to Discord when something gets worse.</p>
+    <p>Because it sends requests to any address a visitor types in, most of the work
+    went into what it refuses to do: only public hostnames, every redirect re-checked,
+    rate limits, and containers that run without root.</p>
+    <p class="stack">Python, FastAPI, Docker Compose, Caddy, GitHub Actions, SQLite</p>
+    <p class="project-links">
+      <a href="https://sitecheck.aleksandersarkezi.com">Try it</a>
+      <a href="https://github.com/aleksandersarkezi/sitecheck">Source code</a>
+    </p>
+  </article>
+
+  <article class="project">
+    <div class="project-head">
+      <h3>netscan</h3>
+    </div>
+    <p>An asynchronous network scanner for the command line. TCP connect scans without
+    root, host discovery, banner grabbing for HTTP, SSH, FTP and SMTP, and export to
+    JSON, CSV or XML. Takes single IPs, CIDR ranges or hostnames, with limits on speed
+    and parallel connections.</p>
+    <p class="stack">Python, asyncio</p>
+    <p class="project-links">
+      <a href="https://github.com/aleksandersarkezi/netscan">Source code</a>
+    </p>
+  </article>
+
+  <article class="project">
+    <div class="project-head">
+      <h3>wolt_sledilnik</h3>
+    </div>
+    <p>A school project built around my own delivery work: a MySQL database with
+    19 entities, triggers and views for tracking deliveries and earnings, with full
+    documentation, plus a C# desktop app in WinForms and WPF on top of it.</p>
+    <p class="stack">MySQL, C#, WinForms, WPF</p>
+  </article>
+</section>
+
+<section aria-labelledby="experience">
+  <h2 id="experience">Experience</h2>
+  <ol class="timeline">
+    <li>
+      <p class="when">Oct 2025 – now</p>
+      <div>
+        <h3>Student, Računalništvo in informatika</h3>
+        <p>Višja strokovna šola, Ekonomska šola Murska Sobota. Programming in C# and
+        C++, databases, computer networks and Linux.</p>
+      </div>
+    </li>
+    <li>
+      <p class="when">Jan – Mar 2026</p>
+      <div>
+        <h3>Practical training, Gimnazija Murska Sobota</h3>
+        <p>Looked after the school's computers and network, moved and terminated network
+        hardware in the server room, and built a web application with its own database
+        and admin access.</p>
+      </div>
+    </li>
+    <li>
+      <p class="when">Jul 2025 – now</p>
+      <div>
+        <h3>Courier, Wolt</h3>
+        <p>Deliveries across Murska Sobota and the villages around it. Planning my own
+        routes and working against the clock.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section aria-labelledby="skills">
+  <h2 id="skills">What I work with</h2>
+  <dl class="skills">
+    <dt>Infrastructure</dt>
+    <dd>Linux servers, Docker and Docker Compose, Caddy, Let's Encrypt, SSH hardening,
+    firewalls, Cloudflare DNS</dd>
+    <dt>Automation</dt>
+    <dd>GitHub Actions, Git, automated tests, deploys with rollback</dd>
+    <dt>Networks</dt>
+    <dd>IPv4 and IPv6, subnetting, VLANs, Cisco switches</dd>
+    <dt>Programming</dt>
+    <dd>Python, C#, C++, SQL, HTML, CSS, JavaScript</dd>
+    <dt>Languages</dt>
+    <dd>Slovenian (native), English</dd>
+  </dl>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p>This page and sitecheck run on the same small server, which I set up and maintain
+  myself.</p>
+</footer>
+
+</div>
+</body>
+</html>

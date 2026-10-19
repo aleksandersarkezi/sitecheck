@@ -95,8 +95,11 @@ services:
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:?set SITE_DOMAIN in .env}
       ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+      # Domain for the static home page in ./site (see Caddyfile).
+      ROOT_DOMAIN: ${ROOT_DOMAIN:-aleksandersarkezi.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv/site:ro
       - caddy_data:/data        # certificates, keep this volume!
       - caddy_config:/config
     cap_drop: [ALL]

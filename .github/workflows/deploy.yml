@@ -106,6 +106,8 @@ jobs:
           SSH="ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes"
           rsync -az -e "$SSH" deploy/docker-compose.yml deploy/Caddyfile deploy/deploy.sh \
             "$USER@$HOST:~/sitecheck/"
+          # The static home page; --delete removes files that were deleted in git.
+          rsync -az --delete -e "$SSH" deploy/site/ "$USER@$HOST:~/sitecheck/site/"
           $SSH "$USER@$HOST" "bash ~/sitecheck/deploy.sh '$TAG'"
 
       - name: Clean up key

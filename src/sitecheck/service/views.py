@@ -23,6 +23,7 @@ GITHUB_URL = "https://github.com/aleksandersarkezi/sitecheck"
 AUTHOR_NAME = "Aleksander Šarkezi"
 AUTHOR_LINKEDIN = "https://www.linkedin.com/in/aleksandersarkezi"
 AUTHOR_GITHUB = "https://github.com/aleksandersarkezi"
+AUTHOR_HOME = "https://aleksandersarkezi.com/"
 
 SITE_DESCRIPTION = (
     "Free website security check. Enter a domain and sitecheck grades its HTTPS setup, "
@@ -108,7 +109,7 @@ def _structured_data(base_url: str) -> str:
         "author": {
             "@type": "Person",
             "name": AUTHOR_NAME,
-            "url": AUTHOR_LINKEDIN,
+            "url": AUTHOR_HOME,
             "sameAs": [AUTHOR_LINKEDIN, AUTHOR_GITHUB],
         },
         "codeRepository": GITHUB_URL,
@@ -170,9 +171,8 @@ def page(
 {body}
 </main>
 <footer class="foot">
-  <p>Built and run by {esc(AUTHOR_NAME)}
-  (<a href="{AUTHOR_LINKEDIN}" rel="author">LinkedIn</a>,
-  <a href="{AUTHOR_GITHUB}">GitHub</a>).</p>
+  <p>Built and run by <a href="{AUTHOR_HOME}" rel="author">{esc(AUTHOR_NAME)}</a>
+  (<a href="{AUTHOR_LINKEDIN}">LinkedIn</a>, <a href="{AUTHOR_GITHUB}">GitHub</a>).</p>
   <p>sitecheck {esc(__version__)}. It only sends the requests a browser sends when it loads
   a page, so it never logs in, submits forms or probes for hidden paths. Check sites you
   own or have permission to test.</p>

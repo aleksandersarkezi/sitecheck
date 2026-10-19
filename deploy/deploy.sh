@@ -46,6 +46,22 @@ wait_healthy() {
   return 1
 }
 
+# The Caddyfile is bind-mounted as a single file. rsync replaces it with a new
+# file, which the running container doesn't see, so Caddy is recreated
+# whenever the file's content actually changed.
+reload_caddy_if_changed() {
+  local new old
+  new="$(sha256sum Caddyfile | cut -d' ' -f1)"
+  old="$(cat .caddyfile.sha256 2>/dev/null || true)"
+  if [[ "$new" != "$old" ]]; then
+    echo "Caddyfile changed, recreating caddy"
+    docker compose up -d --force-recreate --no-deps caddy
+    echo "$new" > .caddyfile.sha256
+  fi
+}
+
+mkdir -p site
+
 echo "deploying $NEW_TAG (current: $OLD_TAG)"
 set_tag "$NEW_TAG"
 docker compose pull --quiet
@@ -53,6 +69,7 @@ docker compose up -d --remove-orphans
 
 if wait_healthy; then
   echo "app is healthy on $NEW_TAG"
+  reload_caddy_if_changed
   # Keep the disk from filling up with old images.
   docker image prune -f --filter "until=168h" > /dev/null
   exit 0

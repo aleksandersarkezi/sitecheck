@@ -12,6 +12,21 @@
   font-weight: 100 900;
   font-stretch: 62% 125%;
   src: url("fonts/archivo.woff2") format("woff2-variations"), url("fonts/archivo.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+/* Slovenian and Croatian letters (č, ć, đ, š, ž) are not in the basic Latin
+   file above, so they come from this tiny subset instead of a fallback font. */
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url("fonts/archivo-sl.woff2") format("woff2-variations"), url("fonts/archivo-sl.woff2") format("woff2");
+  unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E;
 }
 
 :root {

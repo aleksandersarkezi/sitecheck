@@ -28,3 +28,44 @@
 		format json
 	}
 }
+
+# Personal home page: plain static files from ./site, served by Caddy itself.
+# ROOT_DOMAIN can be set in .env; it defaults to the owner's domain.
+{$ROOT_DOMAIN:aleksandersarkezi.com} {
+	encode zstd gzip
+	root * /srv/site
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Content-Security-Policy "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		-Server
+	}
+
+	# Fonts and images rarely change; HTML and CSS are revalidated every time
+	# so a deploy shows up immediately.
+	@assets path /fonts/* /og.png /favicon.svg
+	header @assets Cache-Control "public, max-age=604800"
+	@pages not path /fonts/* /og.png /favicon.svg
+	header @pages Cache-Control "no-cache"
+
+	file_server
+
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
+
+www.{$ROOT_DOMAIN:aleksandersarkezi.com} {
+	redir https://{$ROOT_DOMAIN:aleksandersarkezi.com}{uri} permanent
+}
