@@ -154,7 +154,9 @@ def page(
 <meta name="description" content="{esc(SITE_DESCRIPTION)}">
 <title>{esc(title)}</title>
 {seo}
+<link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="preload" href="/static/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{CSS_URL}">
 </head>

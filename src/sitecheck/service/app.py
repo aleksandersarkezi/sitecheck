@@ -24,7 +24,13 @@ from importlib.resources import files
 from typing import Annotated
 
 from fastapi import FastAPI, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    Response,
+)
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
@@ -297,6 +303,16 @@ def create_app(
             "\n".join(parts), title, base_url=public_base(request), indexable=not host
         )
         return HTMLResponse(html, status_code=status)
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon() -> FileResponse:
+        # Browsers and search engines ask for /favicon.ico even when the page
+        # links an SVG icon, so serve it at the root instead of returning 404.
+        return FileResponse(
+            str(files(__package__) / "static" / "favicon.ico"),
+            media_type="image/x-icon",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
 
     @app.get("/robots.txt", response_class=PlainTextResponse)
     def robots(request: Request) -> str:

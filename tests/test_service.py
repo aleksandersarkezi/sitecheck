@@ -272,3 +272,10 @@ def test_structured_data_is_valid_json(client):
 def test_static_social_assets(client):
     assert client.get("/static/og.png").headers["content-type"] == "image/png"
     assert client.get("/static/favicon.svg").status_code == 200
+
+
+def test_favicon_ico_served_at_root(client):
+    response = client.get("/favicon.ico")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/x-icon"
+    assert client.get("/static/apple-touch-icon.png").status_code == 200
