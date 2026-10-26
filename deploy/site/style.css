@@ -1,7 +1,11 @@
 /* aleksandersarkezi.com
  *
- * Same typeface and palette as sitecheck, so the two read as one person's work.
- * The name is the one loud element; everything under it stays plain.
+ * One typeface, Archivo, and its width axis is the whole visual idea: type
+ * stretches open as things arrive and squeezes shut as you scroll past, the way
+ * a deploy expands into place. Everything around it stays plain.
+ *
+ * Without JavaScript (or with reduced motion) the page is complete and static.
+ * js/main.js adds the motion on top.
  */
 
 @font-face {
@@ -28,30 +32,68 @@
   unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E;
 }
 
+/* Registered so the page can fade between light and dark while you scroll
+   into the infrastructure section. */
+@property --bg { syntax: "<color>"; inherits: true; initial-value: #dfe3e0; }
+@property --fg { syntax: "<color>"; inherits: true; initial-value: #151a1c; }
+@property --muted { syntax: "<color>"; inherits: true; initial-value: #556165; }
+@property --line { syntax: "<color>"; inherits: true; initial-value: #bfc7c3; }
+
 :root {
-  --paper: #eef2ef;
-  --surface: #f8faf9;
-  --ink: #1c2629;
-  --muted: #586569;
-  --line: #d2dbd7;
-  --accent: #2e4bc6;
-  --live: #23774f;
-  --srv-bg: #dfeee6;
-  --srv-line: #23774f;
+  /* Brushed aluminium, rack ink, the blue from sitecheck, status-LED green. */
+  --alu: #dfe3e0;
+  --alu-2: #eef1ef;
+  --ink: #151a1c;
+  --ink-2: #1e2528;
+  --steel: #556165;
+  --signal: #2e4bc6;
+  --led: #1f8a55;
+
+  --bg: var(--alu);
+  --fg: var(--ink);
+  --muted: var(--steel);
+  --line: #bfc7c3;
+  --surface: var(--alu-2);
+  --accent: var(--signal);
+  --live: var(--led);
+  --srv-bg: #d3e6da;
+  --srv-line: var(--led);
+
   --font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --measure: 38rem;
+}
+
+/* The dark palette, used by the infra section always and by the whole page
+   while that section is on screen. */
+.infra,
+html.is-dark body {
+  --bg: var(--ink);
+  --fg: #e3e8e5;
+  --muted: #95a3a6;
+  --line: #313b3e;
+  --surface: var(--ink-2);
+  --accent: #93a6ff;
+  --live: #4fbf88;
+  --srv-bg: #1b2e26;
+  --srv-line: #4fbf88;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #12181a;
-    --surface: #1a2225;
-    --ink: #e4ebe8;
-    --muted: #97a4a7;
-    --line: #2c383b;
-    --accent: #8ea2ff;
+    --bg: #101416;
+    --fg: #e3e8e5;
+    --muted: #95a3a6;
+    --line: #2b3437;
+    --surface: #182023;
+    --accent: #93a6ff;
     --live: #4fbf88;
     --srv-bg: #1b2e26;
     --srv-line: #4fbf88;
+  }
+  .infra,
+  html.is-dark body {
+    --bg: #060809;
   }
 }
 
@@ -67,11 +109,13 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font);
   font-size: 1.0625rem;
   line-height: 1.6;
+  transition: --bg 0.6s ease, --fg 0.6s ease, --muted 0.6s ease, --line 0.6s ease;
+  overflow-x: clip;
 }
 
 a {
@@ -79,80 +123,224 @@ a {
   text-underline-offset: 0.18em;
 }
 
-a:focus-visible {
+:focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
   border-radius: 2px;
 }
 
-.wrap {
-  max-width: 44rem;
-  margin: 0 auto;
-  padding: 0 1rem 3rem;
+img {
+  max-width: 100%;
+  height: auto;
 }
 
-/* ---- intro ------------------------------------------------------------ */
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: -4rem;
+  z-index: 60;
+  padding: 0.5rem 0.75rem;
+  background: var(--fg);
+  color: var(--bg);
+}
 
-.intro {
-  padding: clamp(3rem, 12vw, 7rem) 0 3rem;
-  border-bottom: 1px solid var(--line);
+.skip:focus {
+  top: 0.75rem;
+}
+
+/* ---- top bar ---------------------------------------------------------- */
+
+.top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem var(--gutter);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.9375rem;
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Slides away while you read down the page, comes back when you scroll up. */
+.top.away {
+  transform: translateY(-100%);
+}
+
+.top a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.top a:hover {
+  text-decoration: underline;
+}
+
+.mark {
+  font-weight: 850;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  font-size: 1.125rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1.25rem;
+  margin-left: auto;
+}
+
+.pulse::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  background: var(--live);
+  vertical-align: 0.1em;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.35; }
+}
+
+@media (max-width: 40rem) {
+  .nav {
+    display: none;
+  }
+  .pulse {
+    margin-left: auto;
+  }
+}
+
+/* ---- hero ------------------------------------------------------------- */
+
+.hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 6rem var(--gutter) 3rem;
+}
+
+/* The name is sized so both lines still fit at the widest setting (125%). */
+.name {
+  margin: 0 0 2.5rem;
+  font-size: clamp(3.25rem, 14.4vw, 17rem);
+  line-height: 0.95;
+  font-weight: 850;
+  font-stretch: 100%;
+  letter-spacing: -0.035em;
+  text-transform: none;
+}
+
+.js .name {
+  opacity: 0;
+  /* Shown by js/main.js; this only kicks in if the script never runs. */
+  animation: show 0s 2.5s forwards;
+}
+
+@keyframes show {
+  to { opacity: 1; }
+}
+
+.name .line {
+  display: block;
+  white-space: nowrap;
+}
+
+.name .ch {
+  display: inline-block;
+  font-variation-settings: "wdth" 100;
+  will-change: transform;
+}
+
+.hero-foot {
+  display: grid;
+  grid-template-columns: auto minmax(0, var(--measure));
+  justify-content: start;
+  gap: 1.5rem;
+  align-items: start;
 }
 
 .me {
   display: block;
-  width: 6.5rem;
-  height: 6.5rem;
-  margin-bottom: 1.75rem;
+  width: 5.5rem;
+  height: 5.5rem;
   border-radius: 50%;
   object-fit: cover;
   background: var(--line);
 }
 
-h1 {
-  margin: 0 0 1.75rem;
-  font-size: clamp(2.5rem, 12.5vw, 6rem);
-  line-height: 1;
-  font-weight: 850;
-  font-stretch: 125%;
-  letter-spacing: -0.035em;
-}
-
 .lede {
-  margin: 0 0 1rem;
-  max-width: 34em;
+  margin: 0 0 0.75rem;
   font-size: 1.1875rem;
 }
 
 .status {
-  margin: 0 0 1.75rem;
+  margin: 0;
   color: var(--muted);
 }
 
-.links {
+@media (max-width: 34rem) {
+  .hero-foot {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- marquee ---------------------------------------------------------- */
+
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--line);
+  padding: 1rem 0;
+}
+
+.marquee-track {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1.5rem;
-}
-
-.links .primary {
-  font-weight: 650;
-  overflow-wrap: anywhere;
-}
-
-/* ---- sections --------------------------------------------------------- */
-
-main section {
-  padding-top: 3rem;
-}
-
-h2 {
-  margin: 0 0 1.5rem;
-  font-size: 1.625rem;
-  line-height: 1.2;
+  width: max-content;
+  font-size: clamp(1.5rem, 4vw, 3rem);
   font-weight: 750;
-  font-stretch: 110%;
-  letter-spacing: -0.01em;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.marquee-track span {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* A small square between items, like the LEDs on a switch. */
+.marquee-track span::after {
+  content: "";
+  width: 0.28em;
+  height: 0.28em;
+  margin: 0 0.9em;
+  background: var(--live);
+}
+
+/* ---- section blocks --------------------------------------------------- */
+
+.block {
+  padding: clamp(4rem, 10vw, 8rem) var(--gutter) 0;
+}
+
+.big {
+  margin: 0 0 clamp(1.5rem, 4vw, 3rem);
+  font-size: clamp(2.75rem, 9vw, 8.5rem);
+  line-height: 0.9;
+  font-weight: 850;
+  letter-spacing: -0.035em;
+}
+
+.big .ch {
+  display: inline-block;
+  font-variation-settings: "wdth" 100;
 }
 
 h3 {
@@ -162,33 +350,60 @@ h3 {
   font-weight: 700;
 }
 
+.section-lede {
+  max-width: var(--measure);
+  margin: 0 0 2.5rem;
+  color: var(--muted);
+}
+
 /* ---- projects --------------------------------------------------------- */
 
 .project {
-  padding: 0 0 1.75rem;
-}
-
-.project + .project {
-  padding-top: 1.75rem;
   border-top: 1px solid var(--line);
+  padding: 1.5rem 0 3rem;
 }
 
-.project-head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+.project-name {
+  margin-bottom: 1.5rem;
+  font-size: clamp(2.25rem, 6.5vw, 5.5rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variation-settings: "wdth" 85;
+  transition: font-variation-settings 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.project-head h3 {
-  font-size: 1.375rem;
-  font-stretch: 112%;
+.project-name a,
+.project-name span {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* The name opens up to full width when you point at it. */
+.project:hover .project-name,
+.project-name:focus-within {
+  font-variation-settings: "wdth" 125;
+}
+
+.project-name a:focus-visible {
+  outline-offset: 6px;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+  gap: clamp(1.5rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.project-text p {
+  margin: 0 0 0.85rem;
 }
 
 .live {
-  font-size: 0.875rem;
-  font-weight: 650;
   color: var(--live);
+  font-weight: 650;
+  font-size: 0.9375rem;
 }
 
 .live::before {
@@ -196,30 +411,24 @@ h3 {
   display: inline-block;
   width: 0.55em;
   height: 0.55em;
-  margin-right: 0.4em;
+  margin-right: 0.45em;
   border-radius: 50%;
   background: currentColor;
   vertical-align: 0.08em;
+  animation: pulse 2.4s ease-in-out infinite;
 }
 
-.project p {
-  margin: 0 0 0.75rem;
-  max-width: 38em;
-}
-
-.project .stack {
+.stack {
   color: var(--muted);
   font-size: 0.9375rem;
 }
 
 .badge {
-  margin: 0.25rem 0 1rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .badge img {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 
 .badge figcaption {
@@ -230,53 +439,74 @@ h3 {
 
 .project-links {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  font-weight: 650;
 }
 
-.project .badge {
-  margin: 0.25rem 0 1rem;
+.shot {
+  margin: 0;
 }
 
-.badge img {
+.shot-frame {
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  aspect-ratio: 4 / 5;
+  background: var(--surface);
+}
+
+.shot-frame img {
   display: block;
-  max-width: 100%;
-  height: auto;
+  width: 100%;
+  height: 112%;
+  object-fit: cover;
+  object-position: top;
 }
 
-.badge figcaption {
-  margin-top: 0.4rem;
-  color: var(--muted);
-  font-size: 0.875rem;
+@media (max-width: 52rem) {
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+  .shot {
+    max-width: 26rem;
+  }
 }
 
-.project-links {
-  margin-bottom: 0;
-  font-weight: 600;
+/* ---- infrastructure (dark) ------------------------------------------- */
+
+.infra {
+  margin-top: clamp(4rem, 10vw, 8rem);
+  padding-bottom: clamp(4rem, 10vw, 8rem);
+  background: var(--bg);
+  color: var(--fg);
 }
 
-/* ---- infrastructure flows --------------------------------------------- */
+.infra-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3rem;
+  align-items: start;
+}
+
+@media (max-width: 64rem) {
+  .infra-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 .live-card {
-  margin: 0 0 2rem;
+  margin: 0;
+  max-width: 354px;
 }
 
 .live-card img {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 
 .live-card figcaption {
   margin-top: 0.5rem;
   color: var(--muted);
   font-size: 0.875rem;
-}
-
-
-.section-lede {
-  margin: -0.75rem 0 1.75rem;
-  max-width: 36em;
-  color: var(--muted);
 }
 
 .flows {
@@ -337,14 +567,12 @@ h3 {
   border: 1.5px dashed var(--line);
 }
 
-/* Arrow from each step to the next one. */
 .flow li + li::before {
   content: "";
   position: absolute;
   left: -1.35rem;
   top: 50%;
   width: 1rem;
-  height: 0;
   border-top: 2px solid var(--muted);
 }
 
@@ -367,7 +595,7 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1.5rem;
-  margin: 1.25rem 0 0;
+  margin: 0.25rem 0 0;
   color: var(--muted);
   font-size: 0.875rem;
 }
@@ -402,37 +630,35 @@ h3 {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-
   .flow {
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem 1.5rem;
   }
-
-  /* In two columns the arrow into the third step would point at nothing. */
   .flow li:nth-child(3)::before,
   .flow li:nth-child(3)::after {
     display: none;
   }
 }
 
-/* ---- experience -------------------------------------------------------- */
+/* ---- experience and skills ------------------------------------------- */
 
 .timeline {
   list-style: none;
   margin: 0;
   padding: 0;
+  max-width: 52rem;
 }
 
 .timeline li {
   display: grid;
-  grid-template-columns: 9rem 1fr;
+  grid-template-columns: 10rem 1fr;
   gap: 0.25rem 1.5rem;
-  padding: 0 0 1.5rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line);
 }
 
 .when {
   margin: 0;
-  padding-top: 0.15rem;
+  padding-top: 0.1rem;
   color: var(--muted);
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
@@ -440,22 +666,21 @@ h3 {
 
 .timeline p:not(.when) {
   margin: 0.25rem 0 0;
+  max-width: var(--measure);
   color: var(--muted);
 }
 
-@media (max-width: 34rem) {
-  .timeline li {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ---- skills ------------------------------------------------------------ */
-
 .skills {
   margin: 0;
+  max-width: 52rem;
   display: grid;
-  grid-template-columns: 9rem 1fr;
-  gap: 0.75rem 1.5rem;
+  grid-template-columns: 10rem 1fr;
+}
+
+.skills dt,
+.skills dd {
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--line);
 }
 
 .skills dt {
@@ -468,21 +693,61 @@ h3 {
 }
 
 @media (max-width: 34rem) {
+  .timeline li,
   .skills {
     grid-template-columns: 1fr;
-    gap: 0.1rem;
   }
-
   .skills dd {
-    margin-bottom: 0.75rem;
+    border-top: 0;
+    padding-top: 0;
   }
 }
 
-/* ---- footer ------------------------------------------------------------ */
+/* ---- contact ---------------------------------------------------------- */
+
+.contact {
+  padding: clamp(6rem, 14vw, 12rem) var(--gutter) 4rem;
+}
+
+.contact-h {
+  margin: 0 0 1rem;
+  font-size: 1.1875rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+/* The email is the biggest link on the page, because it's the one that matters. */
+.mail {
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(1.6rem, 6.2vw, 6rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  text-decoration-thickness: 0.06em;
+  overflow-wrap: anywhere;
+  font-variation-settings: "wdth" 80;
+  transition: font-variation-settings 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.3s;
+}
+
+.mail:hover,
+.mail:focus-visible {
+  color: var(--accent);
+  font-variation-settings: "wdth" 100;
+}
+
+.links {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+  font-weight: 650;
+}
+
+/* ---- footer ----------------------------------------------------------- */
 
 .foot {
-  margin-top: 3rem;
-  padding-top: 1rem;
+  padding: 1rem var(--gutter) 2rem;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.875rem;
@@ -500,12 +765,111 @@ h3 {
   color: inherit;
 }
 
+/* ---- boot screen and cursor (only with JavaScript) -------------------- */
+
+.boot,
+.cursor {
+  display: none;
+}
+
+.js.booting .boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  padding: var(--gutter);
+  background: var(--ink);
+  color: #c9d2ce;
+  font-size: clamp(0.875rem, 1.6vw, 1.0625rem);
+  /* If the scripts never arrive, the screen still gets out of the way. */
+  animation: boot-fallback 0s 5s forwards;
+}
+
+@keyframes boot-fallback {
+  to { visibility: hidden; }
+}
+
+.boot-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.boot-log li::before {
+  content: "✓ ";
+  color: #4fbf88;
+}
+
+.boot-bar {
+  height: 3px;
+  background: #2a3336;
+}
+
+.boot-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #4fbf88;
+}
+
+@media (pointer: fine) {
+  .js .cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 90;
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    background: #fff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    opacity: 0;
+    transition: width 0.25s, height 0.25s, margin 0.25s, opacity 0.25s;
+  }
+  .js .cursor.on {
+    opacity: 1;
+  }
+  .js .cursor.big {
+    width: 56px;
+    height: 56px;
+    margin: -28px 0 0 -28px;
+  }
+}
+
+/* Lenis smooth scrolling */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
 /* ---- 404 --------------------------------------------------------------- */
+
+.wrap {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
 
 .notfound {
   padding: 6rem 0 2rem;
 }
 
 .notfound h1 {
+  margin: 0 0 1.5rem;
   font-size: clamp(2.5rem, 10vw, 4rem);
+  line-height: 1;
+  font-weight: 850;
+  font-stretch: 125%;
+  letter-spacing: -0.035em;
 }
