@@ -54,39 +54,48 @@
 <body>
 
 <div class="boot" aria-hidden="true">
-  <ol class="boot-log"></ol>
-  <div class="boot-bar"><span></span></div>
+  <div class="boot-half boot-top"></div>
+  <div class="boot-half boot-bottom"></div>
+  <div class="boot-inner">
+    <ol class="boot-log"></ol>
+    <p class="boot-count">000</p>
+  </div>
 </div>
-<div class="cursor" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"><span class="cursor-label"></span></div>
+<div class="grain" aria-hidden="true"></div>
 
-<a class="skip" href="#projects">Skip to projects</a>
+<a class="skip" href="#work">Skip to projects</a>
 
 <header class="top">
   <a class="mark" href="/" aria-label="Aleksander Šarkezi, home">AŠ</a>
   <nav class="nav" aria-label="Sections">
-    <a href="#projects">Projects</a>
-    <a href="#infra">Infrastructure</a>
-    <a href="#contact">Contact</a>
+    <a href="#work" data-scramble>Projects</a>
+    <a href="#pipeline" data-scramble>Infrastructure</a>
+    <a href="#contact" data-scramble>Contact</a>
   </nav>
   <a class="pulse" href="https://status.aleksandersarkezi.com">Server online</a>
 </header>
 
+<div class="page">
 <main>
 
 <section class="hero" aria-labelledby="name">
   <h1 class="name" id="name">
-    <span class="line">Aleksander</span>
-    <span class="line">Šarkezi</span>
+    <span class="line l1">Aleksander</span>
+    <span class="line l2">Šarkezi</span>
   </h1>
   <div class="hero-foot">
     <img class="me" src="/me.jpg" width="240" height="240" alt="Aleksander Šarkezi">
-    <div>
-      <p class="lede">IT student in Murska Sobota, Slovenia. I like the part of software that
-      happens after the code is written: getting it onto a server, keeping it secure and
-      knowing when it breaks.</p>
-      <p class="status">Open to student work and junior roles in DevOps and infrastructure.</p>
-    </div>
+    <p class="hero-role">IT student in Murska Sobota, Slovenia.<br>
+    Working toward DevOps and infrastructure.</p>
+    <p class="hero-open">Open to student work<br>and junior roles</p>
   </div>
+</section>
+
+<section class="statement" aria-label="About">
+  <p class="reveal-words">I like the part of software that happens after the code is
+  written: getting it onto a server, keeping it secure and knowing when it breaks.
+  Everything on this page runs on a server I set up and look after myself.</p>
 </section>
 
 <div class="marquee" aria-hidden="true">
@@ -97,193 +106,198 @@
   </div>
 </div>
 
-<section class="block" id="projects" aria-labelledby="projects-h">
-  <h2 class="big" id="projects-h">Projects</h2>
+<section class="work" id="work" aria-labelledby="work-h">
+  <h2 class="big" id="work-h">Projects</h2>
 
-  <article class="project">
-    <h3 class="project-name"><a href="https://sitecheck.aleksandersarkezi.com">sitecheck</a></h3>
-    <div class="project-grid">
-      <div class="project-text">
-        <p class="live">Running on my server</p>
-        <p>A public service that grades how well a website is protected, from A to F:
-        HTTPS, certificate, security headers and cookies. It runs on my Hetzner server in
-        Docker behind Caddy. Every push to main is tested, built into an image and deployed
-        automatically, and rolls back if the new version fails its health check. A monitor
-        re-checks sites every few hours and posts to Discord when something gets worse.</p>
-        <p>Because it sends requests to any address a visitor types in, most of the work
-        went into what it refuses to do: only public hostnames, every redirect re-checked,
-        rate limits, and containers that run without root.</p>
-        <p class="stack">Python, FastAPI, Docker Compose, Caddy, GitHub Actions, SQLite</p>
-        <figure class="badge">
-          <img src="https://sitecheck.aleksandersarkezi.com/badge/aleksandersarkezi.com.svg"
-               width="300" height="56" alt="This page's current grade on sitecheck">
-          <figcaption>sitecheck also watches this page. The badge shows its latest check,
-          which runs every 6 hours.</figcaption>
-        </figure>
-        <p class="project-links">
-          <a href="https://sitecheck.aleksandersarkezi.com">Try it</a>
-          <a href="https://github.com/aleksandersarkezi/sitecheck">Source code</a>
-        </p>
-      </div>
-      <figure class="shot">
-        <div class="shot-frame">
+  <div class="cards">
+    <article class="card">
+      <div class="card-inner">
+        <h3 class="card-name"><a href="https://sitecheck.aleksandersarkezi.com" data-cursor="Try it">sitecheck</a></h3>
+        <div class="card-text">
+          <p class="live">Running on my server</p>
+          <p>A public service that grades how well a website is protected, from A to F:
+          HTTPS, certificate, security headers and cookies. Every push to main is tested,
+          built into an image and deployed automatically, and rolls back if the new
+          version fails its health check.</p>
+          <p>Because it sends requests to any address a visitor types in, most of the work
+          went into what it refuses to do: only public hostnames, every redirect
+          re-checked, rate limits, and containers that run without root.</p>
+          <p class="stack">Python, FastAPI, Docker Compose, Caddy, GitHub Actions, SQLite</p>
+          <figure class="badge">
+            <img src="https://sitecheck.aleksandersarkezi.com/badge/aleksandersarkezi.com.svg"
+                 width="300" height="56" alt="This page's current grade on sitecheck">
+            <figcaption>sitecheck also watches this page. The badge shows its latest
+            check.</figcaption>
+          </figure>
+          <p class="card-links">
+            <a href="https://sitecheck.aleksandersarkezi.com">Try it</a>
+            <a href="https://github.com/aleksandersarkezi/sitecheck">Source code</a>
+          </p>
+        </div>
+        <a class="shot" href="https://sitecheck.aleksandersarkezi.com" data-cursor="Try it" tabindex="-1">
           <img src="/sitecheck.jpg" width="800" height="1000" loading="lazy"
                alt="sitecheck report for a test shop: grade D, with failed and passed checks listed by group">
+        </a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-inner">
+        <h3 class="card-name"><a href="https://github.com/aleksandersarkezi/netscan" data-cursor="Code">netscan</a></h3>
+        <div class="card-text">
+          <p>An asynchronous network scanner for the command line. TCP connect scans without
+          root, host discovery, banner grabbing for HTTP, SSH, FTP and SMTP, and export to
+          JSON, CSV or XML. Takes single IPs, CIDR ranges or hostnames, with limits on
+          speed and parallel connections.</p>
+          <p class="stack">Python, asyncio</p>
+          <p class="card-links">
+            <a href="https://github.com/aleksandersarkezi/netscan">Source code</a>
+          </p>
         </div>
-      </figure>
-    </div>
-  </article>
+        <pre class="term" aria-label="A real netscan run against my own machine"><span class="dim">$</span> netscan 127.0.0.1 -p 22,8022,8765 --no-discovery
 
-  <article class="project">
-    <h3 class="project-name"><a href="https://github.com/aleksandersarkezi/netscan">netscan</a></h3>
-    <div class="project-grid">
-      <div class="project-text">
-        <p>An asynchronous network scanner for the command line. TCP connect scans without
-        root, host discovery, banner grabbing for HTTP, SSH, FTP and SMTP, and export to
-        JSON, CSV or XML. Takes single IPs, CIDR ranges or hostnames, with limits on speed
-        and parallel connections.</p>
-        <p class="stack">Python, asyncio</p>
-        <p class="project-links">
-          <a href="https://github.com/aleksandersarkezi/netscan">Source code</a>
-        </p>
+╭─ 127.0.0.1  UP  3.0s ─────────────────────╮
+│  Port  Proto  Service   Version / Banner  │
+│  8022  tcp    unknown                     │
+│  8765  tcp    unknown                     │
+╰───────────────────────────────────────────╯
+<span class="dim">Hosts up 1 / 1 · Total open ports 2</span></pre>
       </div>
-    </div>
-  </article>
+    </article>
 
-  <article class="project">
-    <h3 class="project-name"><span>wolt_sledilnik</span></h3>
-    <div class="project-grid">
-      <div class="project-text">
-        <p>A school project built around my own delivery work: a MySQL database with
-        19 entities, triggers and views for tracking deliveries and earnings, with full
-        documentation, plus a C# desktop app in WinForms and WPF on top of it.</p>
-        <p class="stack">MySQL, C#, WinForms, WPF. School project, the code isn't public.</p>
+    <article class="card">
+      <div class="card-inner">
+        <h3 class="card-name"><span>wolt_sledilnik</span></h3>
+        <div class="card-text">
+          <p>A school project built around my own delivery work: a MySQL database with
+          19 entities, triggers and views for tracking deliveries and earnings, with full
+          documentation, plus a C# desktop app in WinForms and WPF on top of it.</p>
+          <p class="stack">MySQL, C#, WinForms, WPF. School project, the code isn't public.</p>
+        </div>
+        <p class="card-figure" aria-hidden="true">19<span>entities in the database</span></p>
       </div>
-    </div>
-  </article>
+    </article>
+  </div>
 </section>
 
-<section class="block infra" id="infra" aria-labelledby="infra-h">
-  <h2 class="big" id="infra-h">How it all runs</h2>
-  <p class="section-lede">Everything on this page, sitecheck included, runs on one server
-  I set up and look after myself. Three paths keep it going.</p>
-
-  <div class="infra-grid">
-    <div class="flows">
-      <div class="flow-row">
-        <h3 class="flow-name">Ship</h3>
-        <ol class="flow">
-          <li class="ext"><b>git push</b><span>to main on GitHub</span></li>
-          <li class="ext"><b>GitHub Actions</b><span>lint, tests, Docker smoke test</span></li>
-          <li class="ext"><b>Container image</b><span>ghcr.io, tagged by commit</span></li>
-          <li class="srv"><b>deploy.sh</b><span>health check, rolls back on failure</span></li>
-        </ol>
-      </div>
-
-      <div class="flow-row">
-        <h3 class="flow-name">Serve</h3>
-        <ol class="flow">
-          <li class="ext"><b>Visitor</b><span>any browser</span></li>
-          <li class="srv"><b>Caddy</b><span>HTTPS, security headers</span></li>
-          <li class="srv"><b>sitecheck app</b><span>FastAPI in Docker</span></li>
-          <li class="srv"><b>SQLite</b><span>check history</span></li>
-        </ol>
-      </div>
-
-      <div class="flow-row">
-        <h3 class="flow-name">Watch</h3>
-        <ol class="flow pairs">
-          <li class="srv"><b>Monitor</b><span>re-checks sites every 6 hours</span></li>
-          <li class="ext"><b>Discord</b><span>alert on a grade drop or expiring certificate</span></li>
-          <li class="ext"><b>UptimeRobot</b><span>pings the server every 5 minutes</span></li>
-          <li class="ext"><b>Status page</b><span>public uptime history</span></li>
-        </ol>
-      </div>
-
-      <p class="legend"><span class="key srv">On my server</span>
-      <span class="key ext">External service</span></p>
+<section class="pipeline" id="pipeline" aria-labelledby="pipeline-h">
+  <div class="pipe-pin">
+    <div class="pipe-head">
+      <h2 class="pipe-title" id="pipeline-h">How it all runs</h2>
+      <div class="pipe-progress" aria-hidden="true"><span></span></div>
     </div>
-
-    <figure class="live-card">
-      <picture>
-        <source srcset="https://sitecheck.aleksandersarkezi.com/status.svg?theme=dark"
-                media="(prefers-color-scheme: dark)">
-        <img src="https://sitecheck.aleksandersarkezi.com/status.svg?theme=dark" width="354" height="188"
-             alt="Live numbers from the server: site grades, certificate validity, time since the last deploy and monitor checks">
-      </picture>
-      <figcaption>Live from the server. Grades and check counts come from the monitor,
-      which runs every 6 hours.
-      <a href="https://status.aleksandersarkezi.com">Uptime history</a></figcaption>
-    </figure>
+    <ol class="pipe-track">
+      <li class="stage">
+        <p class="stage-n">01</p>
+        <h3 class="stage-word">Push</h3>
+        <p>Code goes to main on GitHub. That's the only manual step.</p>
+      </li>
+      <li class="stage">
+        <p class="stage-n">02</p>
+        <h3 class="stage-word">Test</h3>
+        <p>GitHub Actions runs the linter, the full test suite on three Python versions
+        and a smoke test of the Docker image.</p>
+      </li>
+      <li class="stage">
+        <p class="stage-n">03</p>
+        <h3 class="stage-word">Build</h3>
+        <p>The image is built once, tagged with the commit and pushed to ghcr.io.</p>
+      </li>
+      <li class="stage">
+        <p class="stage-n">04</p>
+        <h3 class="stage-word">Deploy</h3>
+        <p>deploy.sh pulls it on my Hetzner server, waits for the health check and rolls
+        back by itself if the new version fails.</p>
+      </li>
+      <li class="stage">
+        <p class="stage-n">05</p>
+        <h3 class="stage-word">Serve</h3>
+        <p>Caddy handles HTTPS and security headers in front of the app. Certificates
+        renew on their own.</p>
+      </li>
+      <li class="stage">
+        <p class="stage-n">06</p>
+        <h3 class="stage-word">Watch</h3>
+        <p>A monitor re-checks sites every 6 hours and posts to Discord. UptimeRobot
+        pings the server every 5 minutes.</p>
+      </li>
+      <li class="stage stage-live">
+        <figure class="live-card">
+          <img src="https://sitecheck.aleksandersarkezi.com/status.svg?theme=dark" width="354" height="188"
+               alt="Live numbers from the server: site grades, certificate validity, time since the last deploy and monitor checks">
+          <figcaption>Live from the server right now.
+          <a href="https://status.aleksandersarkezi.com">Uptime history</a></figcaption>
+        </figure>
+      </li>
+    </ol>
   </div>
 </section>
 
 <section class="block" id="experience" aria-labelledby="experience-h">
   <h2 class="big" id="experience-h">Experience</h2>
-  <ol class="timeline">
+  <ol class="rows">
     <li>
       <p class="when">Jan – Mar 2026</p>
-      <div>
-        <h3>Practical training, Gimnazija Murska Sobota</h3>
-        <p>Looked after the school's computers and network, moved and terminated network
-        hardware in the server room, and built a web application with its own database
-        and admin access.</p>
-      </div>
+      <h3>Practical training, Gimnazija Murska Sobota</h3>
+      <p class="what">Looked after the school's computers and network, moved and
+      terminated network hardware in the server room, and built a web application with
+      its own database and admin access.</p>
     </li>
     <li>
       <p class="when">Oct 2025 – now</p>
-      <div>
-        <h3>Student, Računalništvo in informatika</h3>
-        <p>Višja strokovna šola, Ekonomska šola Murska Sobota. Programming in C# and
-        C++, databases, computer networks and Linux.</p>
-      </div>
+      <h3>Student, Računalništvo in informatika</h3>
+      <p class="what">Višja strokovna šola, Ekonomska šola Murska Sobota. Programming in
+      C# and C++, databases, computer networks and Linux.</p>
     </li>
     <li>
       <p class="when">Jul 2025 – now</p>
-      <div>
-        <h3>Courier, Wolt</h3>
-        <p>Deliveries across Murska Sobota and the villages around it. Planning my own
-        routes and working against the clock.</p>
-      </div>
+      <h3>Courier, Wolt</h3>
+      <p class="what">Deliveries across Murska Sobota and the villages around it. Planning
+      my own routes and working against the clock.</p>
     </li>
   </ol>
 </section>
 
 <section class="block" id="skills" aria-labelledby="skills-h">
   <h2 class="big" id="skills-h">What I work with</h2>
-  <dl class="skills">
-    <dt>Infrastructure</dt>
+  <dl class="rows skills">
+    <div><dt>Infrastructure</dt>
     <dd>Linux servers, Docker and Docker Compose, Caddy, Let's Encrypt, SSH hardening,
-    firewalls, Cloudflare DNS</dd>
-    <dt>Automation</dt>
-    <dd>GitHub Actions, Git, automated tests, deploys with rollback</dd>
-    <dt>Learning now</dt>
+    firewalls, Cloudflare DNS</dd></div>
+    <div><dt>Automation</dt>
+    <dd>GitHub Actions, Git, automated tests, deploys with rollback</dd></div>
+    <div><dt>Learning now</dt>
     <dd>Kubernetes: deployments, probes, rolling updates and autoscaling on a local
-    kind cluster</dd>
-    <dt>Networks</dt>
-    <dd>IPv4 and IPv6, subnetting, VLANs, Cisco switch configuration</dd>
-    <dt>Programming</dt>
-    <dd>Python, C#, C++, SQL, HTML, CSS, JavaScript</dd>
-    <dt>Languages</dt>
-    <dd>Slovenian (native), English</dd>
+    kind cluster</dd></div>
+    <div><dt>Networks</dt>
+    <dd>IPv4 and IPv6, subnetting, VLANs, Cisco switch configuration</dd></div>
+    <div><dt>Programming</dt>
+    <dd>Python, C#, C++, SQL, HTML, CSS, JavaScript</dd></div>
+    <div><dt>Languages</dt>
+    <dd>Slovenian (native), English</dd></div>
   </dl>
-</section>
-
-<section class="contact" id="contact" aria-labelledby="contact-h">
-  <h2 class="contact-h" id="contact-h">Write to me</h2>
-  <a class="mail" href="mailto:aleksandersarkezi@gmail.com">aleksandersarkezi@gmail.com</a>
-  <nav class="links" aria-label="Profiles">
-    <a href="https://www.linkedin.com/in/aleksandersarkezi">LinkedIn</a>
-    <a href="https://github.com/aleksandersarkezi">GitHub</a>
-  </nav>
 </section>
 
 </main>
 
-<footer class="foot">
-  <p>Hand-written HTML, CSS and a little JavaScript for the motion. No framework, no trackers.</p>
-  <p><!-- deploy -->Not deployed by the pipeline yet.<!-- /deploy --></p>
+<footer class="foot" id="contact">
+  <div class="foot-top">
+    <h2 class="foot-h">Write to me</h2>
+    <a class="mail" href="mailto:aleksandersarkezi@gmail.com" data-cursor="Email">aleksandersarkezi@gmail.com</a>
+    <nav class="links" aria-label="Profiles">
+      <a href="https://www.linkedin.com/in/aleksandersarkezi" data-scramble>LinkedIn</a>
+      <a href="https://github.com/aleksandersarkezi" data-scramble>GitHub</a>
+      <a href="https://status.aleksandersarkezi.com" data-scramble>Uptime</a>
+    </nav>
+  </div>
+  <p class="foot-name" aria-hidden="true">Šarkezi</p>
+  <div class="foot-meta">
+    <p>Murska Sobota, <span class="clock">Slovenia</span></p>
+    <p>Hand-written HTML, CSS and a little JavaScript. No framework, no trackers.</p>
+    <p><!-- deploy -->Not deployed by the pipeline yet.<!-- /deploy --></p>
+  </div>
 </footer>
+</div>
 
 </body>
 </html>
