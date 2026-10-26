@@ -37,7 +37,7 @@
 
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
-		Content-Security-Policy "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' https://{$SITE_DOMAIN}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' https://{$SITE_DOMAIN}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "no-referrer"
@@ -46,11 +46,11 @@
 		-Server
 	}
 
-	# Fonts and images rarely change; HTML and CSS are revalidated every time
-	# so a deploy shows up immediately.
-	@assets path /fonts/* /og.png /favicon.svg /me.jpg
+	# Fonts, images and versioned libraries rarely change; HTML, CSS and
+	# main.js are revalidated every time so a deploy shows up immediately.
+	@assets path /fonts/* /og.png /favicon.svg /me.jpg /sitecheck.jpg /js/vendor/*
 	header @assets Cache-Control "public, max-age=604800"
-	@pages not path /fonts/* /og.png /favicon.svg /me.jpg
+	@pages not path /fonts/* /og.png /favicon.svg /me.jpg /sitecheck.jpg /js/vendor/*
 	header @pages Cache-Control "no-cache"
 
 	file_server

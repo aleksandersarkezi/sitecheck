@@ -1,7 +1,12 @@
 /* aleksandersarkezi.com
  *
- * Same typeface and palette as sitecheck, so the two read as one person's work.
- * The name is the one loud element; everything under it stays plain.
+ * One typeface, Archivo, and its width axis is the whole visual idea. The two
+ * lines of the name are set at different widths so both run exactly edge to
+ * edge; titles stretch open as they arrive; the pipeline scrolls sideways like
+ * a build log. Everything around the type stays plain.
+ *
+ * Without JavaScript (or with reduced motion) the page is complete and static.
+ * js/main.js adds the motion on top.
  */
 
 @font-face {
@@ -29,29 +34,54 @@
 }
 
 :root {
-  --paper: #eef2ef;
-  --surface: #f8faf9;
-  --ink: #1c2629;
-  --muted: #586569;
-  --line: #d2dbd7;
-  --accent: #2e4bc6;
-  --live: #23774f;
-  --srv-bg: #dfeee6;
-  --srv-line: #23774f;
+  /* Brushed aluminium, rack ink, the blue from sitecheck, status-LED green. */
+  --alu: #dfe3e0;
+  --alu-2: #f1f3f2;
+  --ink: #141819;
+  --ink-2: #1d2427;
+  --steel: #556165;
+  --signal: #2e4bc6;
+  --led: #1f8a55;
+  --led-bright: #4fbf88;
+
+  --bg: var(--alu);
+  --fg: var(--ink);
+  --muted: var(--steel);
+  --line: #bcc5c1;
+  --accent: var(--signal);
+  --live: var(--led);
+
   --font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  --gutter: clamp(1rem, 3.5vw, 3rem);
+  --measure: 36rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Dark blocks: the pipeline and the footer. */
+.pipeline,
+.foot {
+  --bg: var(--ink);
+  --fg: #e3e8e5;
+  --muted: #95a3a6;
+  --line: #313b3e;
+  --accent: #93a6ff;
+  --live: var(--led-bright);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #12181a;
-    --surface: #1a2225;
-    --ink: #e4ebe8;
-    --muted: #97a4a7;
-    --line: #2c383b;
-    --accent: #8ea2ff;
-    --live: #4fbf88;
-    --srv-bg: #1b2e26;
-    --srv-line: #4fbf88;
+    --bg: #101415;
+    --fg: #e3e8e5;
+    --muted: #95a3a6;
+    --line: #2b3437;
+    --accent: #93a6ff;
+    --live: var(--led-bright);
+    --alu-2: #1a2023;
+  }
+  .pipeline,
+  .foot {
+    --bg: #070909;
   }
 }
 
@@ -67,11 +97,12 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--fg);
   font-family: var(--font);
   font-size: 1.0625rem;
   line-height: 1.6;
+  overflow-x: clip;
 }
 
 a {
@@ -79,80 +110,267 @@ a {
   text-underline-offset: 0.18em;
 }
 
-a:focus-visible {
+:focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
   border-radius: 2px;
 }
 
-.wrap {
-  max-width: 44rem;
-  margin: 0 auto;
-  padding: 0 1rem 3rem;
+img {
+  max-width: 100%;
+  height: auto;
 }
 
-/* ---- intro ------------------------------------------------------------ */
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: -4rem;
+  z-index: 60;
+  padding: 0.5rem 0.75rem;
+  background: var(--fg);
+  color: var(--bg);
+}
 
-.intro {
-  padding: clamp(3rem, 12vw, 7rem) 0 3rem;
-  border-bottom: 1px solid var(--line);
+.skip:focus {
+  top: 0.75rem;
+}
+
+/* ---- top bar ---------------------------------------------------------- */
+
+/* White with "difference" blending reads on light and dark sections alike. */
+.top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem var(--gutter);
+  color: #fff;
+  mix-blend-mode: difference;
+  font-size: 0.9375rem;
+  transition: transform 0.45s var(--ease);
+}
+
+/* Slides away while you read down the page, comes back when you scroll up. */
+.top.away {
+  transform: translateY(-100%);
+}
+
+.top a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.top a:hover {
+  text-decoration: underline;
+}
+
+.mark {
+  font-weight: 850;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  font-size: 1.125rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1.5rem;
+  margin-left: auto;
+}
+
+.pulse::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 0.1em;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.25; }
+}
+
+@media (max-width: 40rem) {
+  .nav {
+    display: none;
+  }
+  .pulse {
+    margin-left: auto;
+  }
+}
+
+/* ---- page and footer curtain ----------------------------------------- */
+
+/* main slides up over the footer, which waits underneath and is uncovered at
+   the end of the page. */
+main {
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
+  border-radius: 0 0 clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
+  overflow: clip;
+}
+
+/* ---- hero ------------------------------------------------------------- */
+
+.hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 5rem var(--gutter) 2rem;
+}
+
+/* Without the script: a close approximation of the fitted layout that
+   js/main.js computes (both lines exactly as wide as the screen). */
+.name {
+  margin: 0 0 2rem;
+  font-size: 13vw;
+  /* Room above the second line for the caron on Š. */
+  line-height: 0.97;
+  font-weight: 860;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.name .line {
+  display: block;
+  white-space: nowrap;
+}
+
+.name .l1 {
+  font-variation-settings: "wdth" 76;
+}
+
+.name .l2 {
+  font-variation-settings: "wdth" 125;
+}
+
+.name .ch {
+  display: inline-block;
+}
+
+.js .name {
+  opacity: 0;
+  /* Shown by js/main.js; this only kicks in if the script never runs. */
+  animation: show 0s 2.5s forwards;
+}
+
+@keyframes show {
+  to { opacity: 1; }
+}
+
+.hero-foot {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.25rem;
+  align-items: end;
+  line-height: 1.4;
+}
+
+.hero-foot p {
+  margin: 0;
 }
 
 .me {
   display: block;
-  width: 6.5rem;
-  height: 6.5rem;
-  margin-bottom: 1.75rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 50%;
   object-fit: cover;
   background: var(--line);
 }
 
-h1 {
-  margin: 0 0 1.75rem;
-  font-size: clamp(2.5rem, 12.5vw, 6rem);
-  line-height: 1;
-  font-weight: 850;
-  font-stretch: 125%;
-  letter-spacing: -0.035em;
-}
-
-.lede {
-  margin: 0 0 1rem;
-  max-width: 34em;
-  font-size: 1.1875rem;
-}
-
-.status {
-  margin: 0 0 1.75rem;
+.hero-open {
+  text-align: right;
   color: var(--muted);
 }
 
-.links {
+@media (max-width: 40rem) {
+  .hero {
+    min-height: 82svh;
+  }
+  .hero-foot {
+    grid-template-columns: auto 1fr;
+  }
+  .hero-open {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+/* ---- statement -------------------------------------------------------- */
+
+.statement {
+  padding: clamp(5rem, 14vw, 12rem) var(--gutter);
+}
+
+.reveal-words {
+  margin: 0;
+  max-width: 19em;
+  font-size: clamp(1.75rem, 4.6vw, 4.5rem);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-variation-settings: "wdth" 92;
+}
+
+.reveal-words .w {
+  display: inline-block;
+}
+
+/* ---- marquee ---------------------------------------------------------- */
+
+.marquee {
+  overflow: hidden;
+  padding: 1.25rem 0;
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.marquee-track {
   display: flex;
-  flex-wrap: wrap;
+  width: max-content;
+  font-size: clamp(2rem, 6vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+  font-variation-settings: "wdth" 115;
+}
+
+.marquee-track span {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem 1.5rem;
 }
 
-.links .primary {
-  font-weight: 650;
-  overflow-wrap: anywhere;
+/* A square between items, like the LEDs on a switch. */
+.marquee-track span::after {
+  content: "";
+  width: 0.22em;
+  height: 0.22em;
+  margin: 0 0.6em;
+  background: var(--led-bright);
 }
 
-/* ---- sections --------------------------------------------------------- */
+/* ---- section titles --------------------------------------------------- */
 
-main section {
-  padding-top: 3rem;
+.big {
+  margin: 0 0 clamp(2rem, 5vw, 4rem);
+  font-size: clamp(3rem, 11vw, 11rem);
+  line-height: 0.88;
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
 }
 
-h2 {
-  margin: 0 0 1.5rem;
-  font-size: 1.625rem;
-  line-height: 1.2;
-  font-weight: 750;
-  font-stretch: 110%;
-  letter-spacing: -0.01em;
+.big .ch {
+  display: inline-block;
 }
 
 h3 {
@@ -162,33 +380,85 @@ h3 {
   font-weight: 700;
 }
 
-/* ---- projects --------------------------------------------------------- */
+/* ---- projects: cards that stack ------------------------------------- */
 
-.project {
-  padding: 0 0 1.75rem;
+.work {
+  padding: clamp(5rem, 12vw, 10rem) var(--gutter) 2rem;
 }
 
-.project + .project {
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--line);
+.cards {
+  display: grid;
+  gap: 1.5rem;
 }
 
-.project-head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+.card {
+  position: sticky;
+  top: 4.5rem;
+  min-height: min(84svh, 52rem);
+  border-radius: clamp(1rem, 2vw, 1.75rem);
+  background: var(--alu-2);
+  color: var(--fg);
+  transform-origin: 50% 0;
+  overflow: hidden;
 }
 
-.project-head h3 {
-  font-size: 1.375rem;
-  font-stretch: 112%;
+.card:nth-child(2) {
+  --fg: #e3e8e5;
+  --muted: #95a3a6;
+  --line: #374246;
+  --accent: #93a6ff;
+  --live: var(--led-bright);
+  background: var(--ink-2);
+}
+
+.card:nth-child(3) {
+  --fg: #fff;
+  --muted: #d3daff;
+  --line: #5b74dc;
+  --accent: #fff;
+  background: var(--signal);
+}
+
+.card-inner {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: clamp(1.25rem, 3vw, 2.5rem) clamp(1.5rem, 4vw, 4rem);
+  min-height: inherit;
+  padding: clamp(1.25rem, 3vw, 3rem);
+}
+
+.card-text p {
+  margin: 0 0 0.85rem;
+}
+
+.card-name {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: clamp(2.75rem, 7.5vw, 7rem);
+  line-height: 0.95;
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  font-variation-settings: "wdth" 80;
+  transition: font-variation-settings 0.6s var(--ease);
+}
+
+.card-name a,
+.card-name span {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* The project name opens up to full width when you point at the card. */
+.card:hover .card-name,
+.card-name:focus-within {
+  font-variation-settings: "wdth" 125;
 }
 
 .live {
-  font-size: 0.875rem;
-  font-weight: 650;
   color: var(--live);
+  font-weight: 650;
+  font-size: 0.9375rem;
 }
 
 .live::before {
@@ -196,30 +466,24 @@ h3 {
   display: inline-block;
   width: 0.55em;
   height: 0.55em;
-  margin-right: 0.4em;
+  margin-right: 0.45em;
   border-radius: 50%;
   background: currentColor;
   vertical-align: 0.08em;
+  animation: pulse 2.4s ease-in-out infinite;
 }
 
-.project p {
-  margin: 0 0 0.75rem;
-  max-width: 38em;
-}
-
-.project .stack {
+.stack {
   color: var(--muted);
   font-size: 0.9375rem;
 }
 
 .badge {
-  margin: 0.25rem 0 1rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .badge img {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 
 .badge figcaption {
@@ -228,42 +492,184 @@ h3 {
   font-size: 0.875rem;
 }
 
-.project-links {
+.card-links {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  font-weight: 650;
 }
 
-.project .badge {
-  margin: 0.25rem 0 1rem;
-}
-
-.badge img {
+.shot {
   display: block;
-  max-width: 100%;
-  height: auto;
+  align-self: stretch;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  max-height: 44rem;
 }
 
-.badge figcaption {
-  margin-top: 0.4rem;
-  color: var(--muted);
-  font-size: 0.875rem;
+.shot img {
+  display: block;
+  width: 100%;
+  height: 115%;
+  object-fit: cover;
+  object-position: top;
 }
 
-.project-links {
-  margin-bottom: 0;
+.term {
+  align-self: center;
+  margin: 0;
+  padding: 1.25rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: #0d1112;
+  color: #d5ddd9;
+  font-family: var(--mono);
+  font-size: clamp(0.6875rem, 1.05vw, 0.9375rem);
+  line-height: 1.5;
+}
+
+.term .dim {
+  color: #7f8d90;
+}
+
+.card-figure {
+  align-self: end;
+  justify-self: end;
+  margin: 0;
+  font-size: clamp(9rem, 30vw, 28rem);
+  line-height: 0.78;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  font-variation-settings: "wdth" 62;
+  text-align: right;
+}
+
+.card-figure span {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.3;
   font-weight: 600;
+  letter-spacing: 0;
+  font-variation-settings: "wdth" 100;
+  color: var(--muted);
 }
 
-/* ---- infrastructure flows --------------------------------------------- */
+@media (max-width: 52rem) {
+  .card-inner {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    position: relative;
+    top: 0;
+    min-height: 0;
+  }
+  .shot {
+    max-height: 22rem;
+  }
+  .card-figure {
+    justify-self: start;
+    text-align: left;
+  }
+}
+
+/* ---- pipeline: scrolls sideways ------------------------------------- */
+
+.pipeline {
+  background: var(--bg);
+  color: var(--fg);
+  margin-top: clamp(4rem, 10vw, 8rem);
+}
+
+.pipe-pin {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  padding: 5rem 0 3rem;
+}
+
+.pipe-head {
+  padding: 0 var(--gutter);
+}
+
+.pipe-title {
+  margin: 0 0 1.5rem;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.pipe-progress {
+  height: 2px;
+  background: var(--line);
+}
+
+.pipe-progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--led-bright);
+  transform-origin: 0 50%;
+}
+
+/* Without the script this is a plain sideways-scrolling row. */
+.pipe-track {
+  display: flex;
+  gap: clamp(1rem, 3vw, 3rem);
+  margin: auto 0;
+  padding: 3rem var(--gutter) 1rem;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.js .pipe-track {
+  overflow: visible;
+  width: max-content;
+}
+
+.stage {
+  flex: 0 0 auto;
+  width: min(86vw, 44rem);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.stage p {
+  margin: 0;
+  max-width: 24rem;
+  color: var(--muted);
+}
+
+.stage .stage-n {
+  color: var(--led-bright);
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.stage-word {
+  margin: 0.5rem 0 1rem;
+  font-size: clamp(3.5rem, 9vw, 9rem);
+  line-height: 0.9;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  font-variation-settings: "wdth" 110;
+}
+
+.stage-live {
+  display: flex;
+  align-items: flex-end;
+  border-top: 0;
+}
 
 .live-card {
-  margin: 0 0 2rem;
+  margin: 0;
+  max-width: 354px;
 }
 
 .live-card img {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 
 .live-card figcaption {
@@ -272,240 +678,339 @@ h3 {
   font-size: 0.875rem;
 }
 
+/* ---- experience and skills ------------------------------------------- */
 
-.section-lede {
-  margin: -0.75rem 0 1.75rem;
-  max-width: 36em;
-  color: var(--muted);
+.block {
+  padding: clamp(5rem, 12vw, 10rem) var(--gutter) 0;
 }
 
-.flows {
-  display: grid;
-  gap: 1.25rem;
+#skills {
+  padding-bottom: clamp(5rem, 12vw, 10rem);
 }
 
-.flow-row {
-  display: grid;
-  grid-template-columns: 4.5rem 1fr;
-  align-items: center;
-  gap: 1rem;
-}
-
-.flow-name {
-  font-size: 0.9375rem;
-  font-weight: 750;
-  font-stretch: 112%;
-}
-
-.flow {
+.rows {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  border-bottom: 1px solid var(--line);
 }
 
-.flow li {
+.rows > li,
+.rows > div {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-height: 4.75rem;
-  padding: 0.6rem 0.7rem;
-  border-radius: 8px;
-  font-size: 0.8125rem;
-  line-height: 1.35;
-}
-
-.flow b {
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-
-.flow span {
-  color: var(--muted);
-}
-
-.srv {
-  background: var(--srv-bg);
-  border: 1.5px solid var(--srv-line);
-}
-
-.ext {
-  background: var(--surface);
-  border: 1.5px dashed var(--line);
-}
-
-/* Arrow from each step to the next one. */
-.flow li + li::before {
-  content: "";
-  position: absolute;
-  left: -1.35rem;
-  top: 50%;
-  width: 1rem;
-  height: 0;
-  border-top: 2px solid var(--muted);
-}
-
-.flow li + li::after {
-  content: "";
-  position: absolute;
-  left: -0.5rem;
-  top: calc(50% - 4px);
-  border: 5px solid transparent;
-  border-left: 6px solid var(--muted);
-}
-
-/* Watch is two separate paths, so there's no arrow from step 2 into step 3. */
-.flow.pairs li:nth-child(3)::before,
-.flow.pairs li:nth-child(3)::after {
-  display: none;
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin: 1.25rem 0 0;
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
-.key {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 0;
-  background: none;
-}
-
-.key::before {
-  content: "";
-  width: 1.1rem;
-  height: 0.8rem;
-  border-radius: 3px;
-}
-
-.key.srv::before {
-  background: var(--srv-bg);
-  border: 1.5px solid var(--srv-line);
-}
-
-.key.ext::before {
-  background: var(--surface);
-  border: 1.5px dashed var(--line);
-}
-
-@media (max-width: 40rem) {
-  .flow-row {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .flow {
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem 1.5rem;
-  }
-
-  /* In two columns the arrow into the third step would point at nothing. */
-  .flow li:nth-child(3)::before,
-  .flow li:nth-child(3)::after {
-    display: none;
-  }
-}
-
-/* ---- experience -------------------------------------------------------- */
-
-.timeline {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.timeline li {
   display: grid;
-  grid-template-columns: 9rem 1fr;
-  gap: 0.25rem 1.5rem;
-  padding: 0 0 1.5rem;
+  grid-template-columns: 11rem minmax(0, 22rem) minmax(0, 1fr);
+  gap: 0.5rem 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line);
+  isolation: isolate;
+}
+
+.skills > div {
+  grid-template-columns: 11rem minmax(0, 1fr);
+}
+
+/* A fill sweeps in behind the row you point at. */
+.rows > li::before,
+.rows > div::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(var(--gutter) * -1);
+  z-index: -1;
+  background: var(--alu-2);
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+  transition: transform 0.45s var(--ease);
+}
+
+.rows > li:hover::before,
+.rows > div:hover::before {
+  transform: scaleY(1);
+}
+
+.rows h3 {
+  font-size: clamp(1.1875rem, 1.8vw, 1.5rem);
+  line-height: 1.2;
+}
+
+.when,
+.what,
+.skills dd {
+  margin: 0;
+  color: var(--muted);
 }
 
 .when {
-  margin: 0;
-  padding-top: 0.15rem;
-  color: var(--muted);
-  font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
-}
-
-.timeline p:not(.when) {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
-}
-
-@media (max-width: 34rem) {
-  .timeline li {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ---- skills ------------------------------------------------------------ */
-
-.skills {
-  margin: 0;
-  display: grid;
-  grid-template-columns: 9rem 1fr;
-  gap: 0.75rem 1.5rem;
 }
 
 .skills dt {
   font-weight: 650;
 }
 
-.skills dd {
-  margin: 0;
+@media (max-width: 52rem) {
+  .rows > li,
+  .rows > div,
+  .skills > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- footer ----------------------------------------------------------- */
+
+.foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100svh;
+  padding: 6rem var(--gutter) 1.5rem;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.foot-h {
+  margin: 0 0 1rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
   color: var(--muted);
 }
 
-@media (max-width: 34rem) {
-  .skills {
-    grid-template-columns: 1fr;
-    gap: 0.1rem;
-  }
-
-  .skills dd {
-    margin-bottom: 0.75rem;
-  }
+/* The email is the biggest link on the page, because it's the one that matters. */
+.mail {
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(1.6rem, 6vw, 6rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  text-decoration-thickness: 0.05em;
+  overflow-wrap: anywhere;
+  font-variation-settings: "wdth" 78;
+  transition: font-variation-settings 0.6s var(--ease), color 0.3s;
 }
 
-/* ---- footer ------------------------------------------------------------ */
+.mail:hover,
+.mail:focus-visible {
+  color: var(--led-bright);
+  font-variation-settings: "wdth" 100;
+}
 
-.foot {
-  margin-top: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin-top: 1.75rem;
+  font-weight: 650;
+}
+
+.foot .links a {
+  color: var(--fg);
+}
+
+.foot-name {
+  margin: 2rem 0 1rem;
+  /* js/main.js fits this exactly; 16vw is close enough without it. */
+  font-size: 16vw;
+  line-height: 0.78;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-variation-settings: "wdth" 125;
+  color: #2a3437;
+}
+
+.foot-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
   color: var(--muted);
   font-size: 0.875rem;
 }
 
-.foot p {
+.foot-meta p {
   margin: 0;
 }
 
-.foot p + p {
-  margin-top: 0.4rem;
+.foot-meta a {
+  color: inherit;
 }
 
-.foot a {
-  color: inherit;
+/* ---- boot screen, cursor and grain (only with JavaScript) ------------- */
+
+.boot,
+.cursor,
+.grain {
+  display: none;
+}
+
+.js.booting .boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: block;
+  color: #c9d2ce;
+  /* If the scripts never arrive, the screen still gets out of the way. */
+  animation: boot-fallback 0s 5s forwards;
+}
+
+@keyframes boot-fallback {
+  to { visibility: hidden; }
+}
+
+.boot-half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: var(--ink);
+}
+
+.boot-top {
+  top: 0;
+}
+
+.boot-bottom {
+  bottom: 0;
+}
+
+.boot-inner {
+  position: absolute;
+  inset: auto var(--gutter) var(--gutter);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.boot-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: clamp(0.8125rem, 1.4vw, 1rem);
+}
+
+.boot-log li::before {
+  content: "✓ ";
+  color: var(--led-bright);
+}
+
+.boot-count {
+  margin: 0;
+  font-size: clamp(5rem, 18vw, 16rem);
+  line-height: 0.8;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #e3e8e5;
+}
+
+@media (max-width: 40rem) {
+  .boot-inner {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+  }
+}
+
+.js .grain {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: block;
+  background: url("grain.png");
+  opacity: 0.06;
+  pointer-events: none;
+  animation: grain 0.9s steps(6) infinite;
+}
+
+/* Moving the texture, not the element, so nothing sticks out of the screen. */
+@keyframes grain {
+  0% { background-position: 0 0; }
+  20% { background-position: -37px 21px; }
+  40% { background-position: 25px -52px; }
+  60% { background-position: -61px -13px; }
+  80% { background-position: 44px 38px; }
+  100% { background-position: 0 0; }
+}
+
+@media (pointer: fine) {
+  .js .cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: #fff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    opacity: 0;
+    transition: width 0.3s var(--ease), height 0.3s var(--ease), margin 0.3s var(--ease), opacity 0.25s;
+  }
+  .js .cursor.on {
+    opacity: 1;
+  }
+  .js .cursor.big {
+    width: 48px;
+    height: 48px;
+    margin: -24px 0 0 -24px;
+  }
+  .js .cursor.label {
+    width: 96px;
+    height: 96px;
+    margin: -48px 0 0 -48px;
+  }
+  .cursor-label {
+    color: #000;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .js .cursor.label .cursor-label {
+    opacity: 1;
+  }
+}
+
+/* Lenis smooth scrolling */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
 }
 
 /* ---- 404 --------------------------------------------------------------- */
 
+.wrap {
+  min-height: 100svh;
+  padding: 0 var(--gutter) 3rem;
+  background: var(--bg);
+}
+
 .notfound {
+  max-width: 44rem;
   padding: 6rem 0 2rem;
 }
 
 .notfound h1 {
+  margin: 0 0 1.5rem;
   font-size: clamp(2.5rem, 10vw, 4rem);
+  line-height: 1;
+  font-weight: 850;
+  font-stretch: 125%;
+  letter-spacing: -0.035em;
 }
