@@ -80,15 +80,17 @@
 <main>
 
 <section class="hero" aria-labelledby="name">
-  <h1 class="name" id="name">
-    <span class="line l1">Aleksander</span>
-    <span class="line l2">Šarkezi</span>
-  </h1>
-  <div class="hero-foot">
-    <img class="me" src="/me.jpg" width="240" height="240" alt="Aleksander Šarkezi">
-    <p class="hero-role">IT student in Murska Sobota, Slovenia.<br>
-    Working toward DevOps and infrastructure.</p>
-    <p class="hero-open">Open to student work<br>and junior roles</p>
+  <figure class="portrait">
+    <img src="/portrait.jpg" width="960" height="1200" alt="Aleksander Šarkezi">
+  </figure>
+  <div class="hero-text">
+    <p class="hero-place">IT student in Murska Sobota, Slovenia</p>
+    <h1 class="name" id="name">
+      <span class="line l1">Aleksander</span>
+      <span class="line l2">Šarkezi</span>
+    </h1>
+    <p class="hero-role">Working toward DevOps and infrastructure.
+    Open to student work and junior roles.</p>
   </div>
 </section>
 
@@ -180,56 +182,55 @@
   </div>
 </section>
 
-<section class="pipeline" id="pipeline" aria-labelledby="pipeline-h">
-  <div class="pipe-pin">
-    <div class="pipe-head">
-      <h2 class="pipe-title" id="pipeline-h">How it all runs</h2>
-      <div class="pipe-progress" aria-hidden="true"><span></span></div>
+<section class="infra" id="pipeline" aria-labelledby="pipeline-h">
+  <h2 class="big" id="pipeline-h">How it all runs</h2>
+  <p class="section-lede">Everything on this page, sitecheck included, runs on one server
+  I set up and look after myself. Three paths keep it going.</p>
+
+  <div class="infra-grid">
+    <div class="flows">
+      <span class="packet" aria-hidden="true"></span>
+      <div class="flow-row">
+        <h3 class="flow-name">Ship</h3>
+        <ol class="flow">
+          <li class="ext"><b>git push</b><span>to main on GitHub</span></li>
+          <li class="ext"><b>GitHub Actions</b><span>lint, tests, Docker smoke test</span></li>
+          <li class="ext"><b>Container image</b><span>ghcr.io, tagged by commit</span></li>
+          <li class="srv"><b>deploy.sh</b><span>health check, rolls back on failure</span></li>
+        </ol>
+      </div>
+
+      <div class="flow-row">
+        <h3 class="flow-name">Serve</h3>
+        <ol class="flow">
+          <li class="ext"><b>Visitor</b><span>any browser</span></li>
+          <li class="srv"><b>Caddy</b><span>HTTPS, security headers</span></li>
+          <li class="srv"><b>sitecheck app</b><span>FastAPI in Docker</span></li>
+          <li class="srv"><b>SQLite</b><span>check history</span></li>
+        </ol>
+      </div>
+
+      <div class="flow-row">
+        <h3 class="flow-name">Watch</h3>
+        <ol class="flow pairs">
+          <li class="srv"><b>Monitor</b><span>re-checks sites every 6 hours</span></li>
+          <li class="ext"><b>Discord</b><span>alert on a grade drop or expiring certificate</span></li>
+          <li class="ext"><b>UptimeRobot</b><span>pings the server every 5 minutes</span></li>
+          <li class="ext"><b>Status page</b><span>public uptime history</span></li>
+        </ol>
+      </div>
+
+      <p class="legend"><span class="key srv">On my server</span>
+      <span class="key ext">External service</span></p>
     </div>
-    <ol class="pipe-track">
-      <li class="stage">
-        <p class="stage-n">01</p>
-        <h3 class="stage-word">Push</h3>
-        <p>Code goes to main on GitHub. That's the only manual step.</p>
-      </li>
-      <li class="stage">
-        <p class="stage-n">02</p>
-        <h3 class="stage-word">Test</h3>
-        <p>GitHub Actions runs the linter, the full test suite on three Python versions
-        and a smoke test of the Docker image.</p>
-      </li>
-      <li class="stage">
-        <p class="stage-n">03</p>
-        <h3 class="stage-word">Build</h3>
-        <p>The image is built once, tagged with the commit and pushed to ghcr.io.</p>
-      </li>
-      <li class="stage">
-        <p class="stage-n">04</p>
-        <h3 class="stage-word">Deploy</h3>
-        <p>deploy.sh pulls it on my Hetzner server, waits for the health check and rolls
-        back by itself if the new version fails.</p>
-      </li>
-      <li class="stage">
-        <p class="stage-n">05</p>
-        <h3 class="stage-word">Serve</h3>
-        <p>Caddy handles HTTPS and security headers in front of the app. Certificates
-        renew on their own.</p>
-      </li>
-      <li class="stage">
-        <p class="stage-n">06</p>
-        <h3 class="stage-word">Watch</h3>
-        <p>A monitor re-checks sites every 6 hours and posts to Discord. UptimeRobot
-        pings the server every 5 minutes.</p>
-      </li>
-      <li class="stage stage-live">
-        <figure class="live-card">
-          <img src="https://sitecheck.aleksandersarkezi.com/status.svg?theme=dark" width="354" height="188"
-               alt="Live numbers from the server: site grades, certificate validity, time since the last deploy and monitor checks">
-          <figcaption>Live from the server right now.
-          <a href="https://status.aleksandersarkezi.com">Uptime history</a></figcaption>
-        </figure>
-      </li>
-    </ol>
+
+    <figure class="live-card">
+      <img src="https://sitecheck.aleksandersarkezi.com/status.svg?theme=dark" width="354" height="188"
+           alt="Live numbers from the server: site grades, certificate validity, time since the last deploy and monitor checks">
+      <figcaption>Live from the server. Grades and check counts come from the monitor,
+      which runs every 6 hours.
+      <a href="https://status.aleksandersarkezi.com">Uptime history</a></figcaption>
+    </figure>
   </div>
 </section>
 

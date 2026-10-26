@@ -2,8 +2,8 @@
  *
  * One typeface, Archivo, and its width axis is the whole visual idea. The two
  * lines of the name are set at different widths so both run exactly edge to
- * edge; titles stretch open as they arrive; the pipeline scrolls sideways like
- * a build log. Everything around the type stays plain.
+ * edge of their column; titles stretch open as they arrive. In the
+ * infrastructure section a light traces each path through the boxes.
  *
  * Without JavaScript (or with reduced motion) the page is complete and static.
  * js/main.js adds the motion on top.
@@ -58,8 +58,8 @@
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-/* Dark blocks: the pipeline and the footer. */
-.pipeline,
+/* Dark blocks: the infrastructure section and the footer. */
+.infra,
 .foot {
   --bg: var(--ink);
   --fg: #e3e8e5;
@@ -79,7 +79,7 @@
     --live: var(--led-bright);
     --alu-2: #1a2023;
   }
-  .pipeline,
+  .infra,
   .foot {
     --bg: #070909;
   }
@@ -218,19 +218,44 @@ main {
 
 /* ---- hero ------------------------------------------------------------- */
 
+/* Photo on the left, the name on the right. */
 .hero {
   min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 5rem var(--gutter) 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  align-items: end;
+  padding: 5.5rem var(--gutter) 2.5rem;
+}
+
+.portrait {
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  max-height: calc(100svh - 8rem);
+  border-radius: clamp(0.75rem, 1.5vw, 1.25rem);
+  background: #c9cecb;
+}
+
+.portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+.hero-place {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 /* Without the script: a close approximation of the fitted layout that
-   js/main.js computes (both lines exactly as wide as the screen). */
+   js/main.js computes (both lines exactly as wide as the column). */
 .name {
-  margin: 0 0 2rem;
-  font-size: 13vw;
+  margin: 0 0 1.75rem;
+  font-size: 7vw;
   /* Room above the second line for the caron on Š. */
   line-height: 0.97;
   font-weight: 860;
@@ -265,42 +290,25 @@ main {
   to { opacity: 1; }
 }
 
-.hero-foot {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1.25rem;
-  align-items: end;
-  line-height: 1.4;
-}
-
-.hero-foot p {
+.hero-role {
   margin: 0;
+  max-width: 28rem;
+  font-size: 1.1875rem;
+  line-height: 1.45;
 }
 
-.me {
-  display: block;
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--line);
-}
-
-.hero-open {
-  text-align: right;
-  color: var(--muted);
-}
-
-@media (max-width: 40rem) {
+@media (max-width: 48rem) {
   .hero {
-    min-height: 82svh;
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding-top: 5rem;
   }
-  .hero-foot {
-    grid-template-columns: auto 1fr;
+  .portrait {
+    width: 62%;
+    max-height: 52svh;
   }
-  .hero-open {
-    grid-column: 1 / -1;
-    text-align: left;
+  .name {
+    font-size: 13vw;
   }
 }
 
@@ -312,8 +320,8 @@ main {
 
 .reveal-words {
   margin: 0;
-  max-width: 19em;
-  font-size: clamp(1.75rem, 4.6vw, 4.5rem);
+  max-width: 21em;
+  font-size: clamp(1.5rem, 3.4vw, 3.25rem);
   line-height: 1.08;
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -361,8 +369,8 @@ main {
 /* ---- section titles --------------------------------------------------- */
 
 .big {
-  margin: 0 0 clamp(2rem, 5vw, 4rem);
-  font-size: clamp(3rem, 11vw, 11rem);
+  margin: 0 0 clamp(1.75rem, 4vw, 3rem);
+  font-size: clamp(2.5rem, 6.5vw, 6rem);
   line-height: 0.88;
   font-weight: 850;
   letter-spacing: -0.035em;
@@ -435,7 +443,7 @@ h3 {
 .card-name {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: clamp(2.75rem, 7.5vw, 7rem);
+  font-size: clamp(2.25rem, 5vw, 4.75rem);
   line-height: 0.95;
   font-weight: 850;
   letter-spacing: -0.035em;
@@ -574,93 +582,32 @@ h3 {
   }
 }
 
-/* ---- pipeline: scrolls sideways ------------------------------------- */
+/* ---- infrastructure: the three paths, traced -------------------------- */
 
-.pipeline {
+.infra {
+  margin-top: clamp(4rem, 10vw, 8rem);
+  padding: clamp(5rem, 10vw, 8rem) var(--gutter);
   background: var(--bg);
   color: var(--fg);
-  margin-top: clamp(4rem, 10vw, 8rem);
 }
 
-.pipe-pin {
-  display: flex;
-  flex-direction: column;
-  min-height: 100svh;
-  padding: 5rem 0 3rem;
-}
-
-.pipe-head {
-  padding: 0 var(--gutter);
-}
-
-.pipe-title {
-  margin: 0 0 1.5rem;
-  font-size: clamp(2rem, 5vw, 4.5rem);
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
-.pipe-progress {
-  height: 2px;
-  background: var(--line);
-}
-
-.pipe-progress span {
-  display: block;
-  height: 100%;
-  width: 100%;
-  background: var(--led-bright);
-  transform-origin: 0 50%;
-}
-
-/* Without the script this is a plain sideways-scrolling row. */
-.pipe-track {
-  display: flex;
-  gap: clamp(1rem, 3vw, 3rem);
-  margin: auto 0;
-  padding: 3rem var(--gutter) 1rem;
-  list-style: none;
-  overflow-x: auto;
-}
-
-.js .pipe-track {
-  overflow: visible;
-  width: max-content;
-}
-
-.stage {
-  flex: 0 0 auto;
-  width: min(86vw, 44rem);
-  border-top: 1px solid var(--line);
-  padding-top: 1rem;
-}
-
-.stage p {
-  margin: 0;
-  max-width: 24rem;
+.section-lede {
+  max-width: var(--measure);
+  margin: -0.5rem 0 3rem;
   color: var(--muted);
 }
 
-.stage .stage-n {
-  color: var(--led-bright);
-  font-variant-numeric: tabular-nums;
-  font-weight: 650;
+.infra-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3rem;
+  align-items: start;
 }
 
-.stage-word {
-  margin: 0.5rem 0 1rem;
-  font-size: clamp(3.5rem, 9vw, 9rem);
-  line-height: 0.9;
-  font-weight: 850;
-  letter-spacing: -0.04em;
-  font-variation-settings: "wdth" 110;
-}
-
-.stage-live {
-  display: flex;
-  align-items: flex-end;
-  border-top: 0;
+@media (max-width: 64rem) {
+  .infra-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .live-card {
@@ -676,6 +623,161 @@ h3 {
   margin-top: 0.5rem;
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+.flows {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.flow-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flow-name {
+  font-size: 0.9375rem;
+  font-weight: 750;
+  font-stretch: 112%;
+}
+
+.flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.flow li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-height: 4.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  transition: border-color 0.35s, box-shadow 0.35s, background-color 0.35s;
+}
+
+.flow b {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.flow span {
+  color: var(--muted);
+}
+
+.srv {
+  background: #1b2e26;
+  border: 1.5px solid var(--led-bright);
+}
+
+.ext {
+  background: var(--ink-2);
+  border: 1.5px dashed var(--line);
+}
+
+/* A box lights up while the traced path passes through it. */
+.flow li.lit {
+  border-color: var(--led-bright);
+  border-style: solid;
+  background: #20392f;
+  box-shadow: 0 0 0 4px rgba(79, 191, 136, 0.18), 0 0 28px rgba(79, 191, 136, 0.25);
+}
+
+.flow li + li::before {
+  content: "";
+  position: absolute;
+  left: -1.35rem;
+  top: 50%;
+  width: 1rem;
+  border-top: 2px solid var(--muted);
+}
+
+.flow li + li::after {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: calc(50% - 4px);
+  border: 5px solid transparent;
+  border-left: 6px solid var(--muted);
+}
+
+/* Watch is two separate paths, so there's no arrow from step 2 into step 3. */
+.flow.pairs li:nth-child(3)::before,
+.flow.pairs li:nth-child(3)::after {
+  display: none;
+}
+
+.packet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: #8ff0bf;
+  box-shadow: 0 0 0 4px rgba(79, 191, 136, 0.3), 0 0 22px 6px rgba(79, 191, 136, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  background: none;
+}
+
+.key::before {
+  content: "";
+  width: 1.1rem;
+  height: 0.8rem;
+  border-radius: 3px;
+}
+
+.key.srv::before {
+  background: #1b2e26;
+  border: 1.5px solid var(--led-bright);
+}
+
+.key.ext::before {
+  background: var(--ink-2);
+  border: 1.5px dashed var(--line);
+}
+
+@media (max-width: 40rem) {
+  .flow-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .flow {
+    grid-template-columns: 1fr 1fr;
+  }
+  .flow li:nth-child(3)::before,
+  .flow li:nth-child(3)::after {
+    display: none;
+  }
 }
 
 /* ---- experience and skills ------------------------------------------- */
@@ -729,7 +831,7 @@ h3 {
 }
 
 .rows h3 {
-  font-size: clamp(1.1875rem, 1.8vw, 1.5rem);
+  font-size: clamp(1.0625rem, 1.3vw, 1.25rem);
   line-height: 1.2;
 }
 

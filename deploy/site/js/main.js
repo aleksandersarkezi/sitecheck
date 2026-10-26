@@ -1,8 +1,9 @@
 // Motion for aleksandersarkezi.com.
 //
 // Archivo's width axis ("wdth", 62 to 125) does most of the work: both lines
-// of the name are fitted to run exactly edge to edge, titles stretch open as
-// they arrive, and the pipeline words widen as they slide in.
+// of the name are fitted to run exactly edge to edge of their column, and
+// titles stretch open as they arrive. In the infrastructure section a light
+// runs through each path, box by box.
 //
 // Everything here is decoration on top of a complete static page, so any
 // failure just leaves that page as it is.
@@ -137,8 +138,8 @@
     name.style.fontSize = "100px";
     wdth(lines[1], MAX_W);
     var size = (100 * box) / lineWidth(lines[1]);
-    // ...unless that would make the name taller than about 60% of the screen.
-    size = Math.min(size, (window.innerHeight * 0.62) / (2 * 0.97));
+    // ...unless that would make the name taller than about 40% of the screen.
+    size = Math.min(size, (window.innerHeight * 0.4) / (2 * 0.97));
     name.style.fontSize = size.toFixed(2) + "px";
     fitted = lines.map(function (line) {
       return fitLine(line, box);
@@ -175,12 +176,18 @@
 
   // The two lines drift apart as you scroll away from the top.
   gsap.to(lines[0], {
-    xPercent: -14,
+    xPercent: -8,
     ease: "none",
     scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
   });
   gsap.to(lines[1], {
-    xPercent: 14,
+    xPercent: 8,
+    ease: "none",
+    scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
+  });
+
+  gsap.to(".portrait img", {
+    yPercent: 10,
     ease: "none",
     scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
   });
@@ -191,8 +198,8 @@
     });
     document.querySelector(".hero").addEventListener("pointermove", function (e) {
       var p = e.clientX / window.innerWidth - 0.5;
-      drift[0](p * -36);
-      drift[1](p * 36);
+      drift[0](p * -24);
+      drift[1](p * 24);
     });
   }
 
@@ -223,7 +230,10 @@
         },
       }, li * 0.15 + 0.2);
     });
-    tl.from(".hero-foot > *", { opacity: 0, y: 20, duration: 0.9, ease: "power3.out", stagger: 0.08 }, 0.8);
+    tl.fromTo(".portrait", { clipPath: "inset(100% 0% 0% 0%)" },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 1.3, ease: "expo.inOut" }, 0);
+    tl.fromTo(".portrait img", { scale: 1.35 }, { scale: 1, duration: 1.8, ease: "expo.out" }, 0.2);
+    tl.from(".hero-place, .hero-role", { opacity: 0, y: 20, duration: 0.9, ease: "power3.out", stagger: 0.1 }, 0.7);
     tl.from(".top", { opacity: 0, duration: 0.6 }, 1);
   }
 
@@ -399,52 +409,67 @@
     });
   }
 
-  // ---- pipeline: pinned and scrolled sideways --------------------------
+  // ---- infrastructure: a light runs through each path -------------------
 
-  var pipeTrack = document.querySelector(".pipe-track");
-  var pipePin = document.querySelector(".pipe-pin");
-  if (pipeTrack && pipePin) {
-    var distance = function () {
-      return Math.max(0, pipeTrack.scrollWidth - window.innerWidth);
+  var flows = document.querySelector(".flows");
+  var packet = document.querySelector(".packet");
+  if (flows && packet) {
+    var boxes = gsap.utils.toArray(".flow li");
+    gsap.from(boxes, {
+      opacity: 0,
+      y: 18,
+      duration: 0.7,
+      ease: "power3.out",
+      stagger: 0.06,
+      scrollTrigger: { trigger: flows, start: "top 80%", once: true },
+    });
+
+    // Each path, as lists of boxes: Ship, Serve, and Watch's two halves.
+    var rows = gsap.utils.toArray(".flow").map(function (ol) {
+      return Array.prototype.slice.call(ol.children);
+    });
+    var paths = [rows[0], rows[1], rows[2].slice(0, 2), rows[2].slice(2, 4)];
+
+    var centre = function (el) {
+      var f = flows.getBoundingClientRect();
+      var r = el.getBoundingClientRect();
+      return { x: r.left - f.left + r.width / 2, y: r.top - f.top + r.height / 2 };
     };
-    var sideways = gsap.to(pipeTrack, {
-      x: function () { return -distance(); },
-      ease: "none",
-      scrollTrigger: {
-        trigger: pipePin,
-        start: "top top",
-        end: function () { return "+=" + distance(); },
-        pin: true,
-        scrub: 0.8,
-        invalidateOnRefresh: true,
-      },
-    });
-    gsap.fromTo(".pipe-progress span", { scaleX: 0 }, {
-      scaleX: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: pipePin,
-        start: "top top",
-        end: function () { return "+=" + distance(); },
-        scrub: true,
-        invalidateOnRefresh: true,
-      },
-    });
-    document.querySelectorAll(".stage-word").forEach(function (word) {
-      var o = { w: MIN_W };
-      wdth(word, MIN_W);
-      gsap.to(o, {
-        w: 110,
-        ease: "power2.out",
-        onUpdate: function () { wdth(word, o.w); },
-        scrollTrigger: {
-          trigger: word,
-          containerAnimation: sideways,
-          start: "left 95%",
-          end: "left 45%",
-          scrub: true,
-        },
+
+    var trace = null;
+    var build = function () {
+      if (trace) trace.kill();
+      boxes.forEach(function (b) { b.classList.remove("lit"); });
+      trace = gsap.timeline({ repeat: -1, repeatDelay: 0.8, paused: true });
+      paths.forEach(function (path) {
+        var first = centre(path[0]);
+        trace.set(packet, { x: first.x, y: first.y });
+        trace.to(packet, { opacity: 1, scale: 1, duration: 0.25, startAt: { scale: 0 } });
+        trace.call(function () { path[0].classList.add("lit"); });
+        path.slice(1).forEach(function (box) {
+          var c = centre(box);
+          trace.to(packet, { x: c.x, y: c.y, duration: 0.6, ease: "power2.inOut" }, "+=0.25");
+          trace.call(function () { box.classList.add("lit"); });
+        });
+        trace.to(packet, { opacity: 0, scale: 0.4, duration: 0.3 }, "+=0.35");
       });
+      trace.call(function () {
+        boxes.forEach(function (b) { b.classList.remove("lit"); });
+      }, null, "+=0.6");
+    };
+    build();
+    ScrollTrigger.create({
+      trigger: flows,
+      start: "top 75%",
+      end: "bottom top",
+      onToggle: function (self) {
+        if (self.isActive) trace.play(); else trace.pause();
+      },
+      onRefresh: function (self) {
+        // Box positions change with the layout, so the path is measured again.
+        build();
+        if (self.isActive) trace.play();
+      },
     });
   }
 
